@@ -1,3 +1,17 @@
+---
+name: "OPNet Development"
+description: "Build on OPNet - Bitcoin L1 consensus layer for trustless smart contracts"
+metadata:
+  version: "1.0.0"
+  author: "OPNet"
+  tags:
+    - bitcoin
+    - smart-contracts
+    - assemblyscript
+    - web3
+    - blockchain
+---
+
 # OPNet Development Skill
 
 A comprehensive skill for building on OPNet - Bitcoin's L1 consensus layer for trustless smart contracts.
