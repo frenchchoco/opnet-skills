@@ -92,6 +92,56 @@ This is enforced at the protocol level in NativeSwap. If you're building any app
 
 ---
 
+## The Two Address Systems (CRITICAL for Airdrops)
+
+OPNet operates with **two fundamentally different address systems**:
+
+| Address System | Format | Used For |
+|---------------|--------|----------|
+| **Bitcoin Address** | Taproot P2TR (tweaked public key) | External identity, Bitcoin transactions |
+| **OPNet Address** | ML-DSA public key hash (32 bytes) | Contract balances, internal state |
+
+### The Core Problem
+
+Contract balances are keyed by **ML-DSA addresses**, but external users are typically known only by their **Bitcoin addresses**. These have **no inherent link** until the user explicitly creates one.
+
+**The Banana Locker Analogy:**
+- You know 300 monkeys by their **face** (Bitcoin address)
+- Lockers open with a **secret handshake** (ML-DSA key)
+- You label lockers with faces, but they need handshakes to open
+- When a monkey shows up, they show face AND do handshake to link them
+
+### Why You Cannot Directly Airdrop to Bitcoin Addresses
+
+If you have a list of Bitcoin addresses (e.g., existing token holders) and want to airdrop:
+- **What you have**: `bc1p...` Bitcoin addresses
+- **What contracts need**: ML-DSA addresses for balance storage
+- **The problem**: No way to know which ML-DSA maps to which Bitcoin address
+
+### Solutions
+
+**Solution 1: Signature Verification in Contracts**
+1. Deploy contract storing: `tweakedPubKey => amount`
+2. User calls `claim()` with signature proving ownership
+3. Contract verifies signature, links ML-DSA to allocation, transfers tokens
+
+```typescript
+// Frontend: User signs message
+import { MessageSigner } from '@btc-vision/transaction';
+const signed = MessageSigner.tweakAndSignMessage(wallet.keypair, claimMessage);
+// Include signature in calldata
+```
+
+**Solution 2: Pre-Converting Keys**
+- Only works if you have users' ML-DSA public keys (not just Bitcoin addresses)
+- OPNet address = SHA256(ML-DSA public key)
+
+**The unlock transaction is the moment where the user proves "this face belongs to this handshake."**
+
+See `docs/core-opnet-address-systems-airdrop-pattern.md` for complete implementation guide.
+
+---
+
 ## NativeSwap: How to Build a Real DEX on Bitcoin
 
 NativeSwap answers the biggest unanswered question in BitcoinFi: **How do you build an actual AMM that trades native BTC for tokens, trustlessly, without custody?**
@@ -533,6 +583,12 @@ const totalSupply: StoredU256 = new StoredU256(TOTAL_SUPPLY_POINTER);
 | `docs/core-transaction-quantum-support-04-message-signing.md` | Quantum signing |
 | `docs/core-transaction-quantum-support-05-address-verification.md` | Quantum verification |
 
+### Address Systems & Airdrops (CRITICAL)
+
+| File | Description |
+|------|-------------|
+| `docs/core-opnet-address-systems-airdrop-pattern.md` | **Two address systems, airdrop pattern (MUST READ)** |
+
 ### OIP Specifications
 
 | File | Description |
@@ -850,3 +906,4 @@ See `docs/core-opnet-backend-api.md` for complete guide.
 8. **NO section separator comments** - Use TSDoc instead
 9. **CSV timelocks are MANDATORY** - All swap recipient addresses MUST use CSV to prevent pinning attacks
 10. **OPNet is consensus, not indexing** - Binding state consistency requires cryptographic guarantees
+11. **Two address systems** - Bitcoin addresses (tweaked pubkey) ≠ OPNet addresses (ML-DSA hash). Airdrops require signature verification to link them.

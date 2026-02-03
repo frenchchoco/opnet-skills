@@ -1,12 +1,200 @@
 # Message Signing Guide
 
 ## Table of Contents
+- [Auto Signing (Recommended)](#auto-signing-recommended)
 - [ML-DSA Signing](#ml-dsa-signing)
 - [Schnorr Signing](#schnorr-signing)
 - [Input Formats](#input-formats)
 - [Signature Verification](#signature-verification)
 - [Tweaked Signatures](#tweaked-signatures)
 - [Best Practices](#best-practices)
+
+## Auto Signing (Recommended)
+
+**IMPORTANT:** Use the **auto methods** for all signing operations. They automatically:
+1. Use OP_WALLET browser extension when available (frontend)
+2. Fall back to local keypair signing when provided (backend)
+3. Ensure signatures are compatible with `Blockchain.verifySignature()` in contracts
+
+### Return Types
+
+```typescript
+interface SignedMessage {
+    readonly signature: Uint8Array;  // 64 bytes for Schnorr
+    readonly message: Uint8Array;    // SHA256 hash of original message
+}
+
+interface MLDSASignedMessage {
+    readonly signature: Uint8Array;       // 2,420+ bytes depending on level
+    readonly message: Uint8Array;         // SHA256 hash of original message
+    readonly publicKey: Uint8Array;       // 1,312+ bytes depending on level
+    readonly securityLevel: MLDSASecurityLevel;
+}
+```
+
+### signMessageAuto
+
+Signs a message using Schnorr signatures.
+
+```typescript
+async signMessageAuto(
+    message: Uint8Array | string,
+    keypair?: UniversalSigner
+): Promise<SignedMessage>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message` | `Uint8Array \| string` | Yes | Message to sign (will be SHA256 hashed) |
+| `keypair` | `UniversalSigner` | No | Keypair for signing. Omit for browser (uses OP_WALLET) |
+
+**Browser (OP_WALLET):**
+
+```typescript
+import { MessageSigner } from '@btc-vision/transaction';
+
+// Omit keypair - OP_WALLET browser extension handles signing
+const message = 'Claim my airdrop tokens';
+const signed = await MessageSigner.signMessageAuto(message);
+
+console.log('Signature:', Buffer.from(signed.signature).toString('hex'));
+console.log('Message Hash:', Buffer.from(signed.message).toString('hex'));
+```
+
+**Backend (local keypair):**
+
+```typescript
+import { MessageSigner, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+const mnemonic = Mnemonic.generate(undefined, '', networks.bitcoin, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.derive(0);
+
+const message = 'Claim my airdrop tokens';
+const signed = await MessageSigner.signMessageAuto(message, wallet.keypair);
+
+console.log('Signature:', Buffer.from(signed.signature).toString('hex'));
+```
+
+### tweakAndSignMessageAuto
+
+Signs a message with the **tweaked key** for Taproot (P2TR) address ownership proofs.
+
+```typescript
+async tweakAndSignMessageAuto(
+    message: Uint8Array | string,
+    keypair?: UniversalSigner,
+    network?: Network
+): Promise<SignedMessage>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message` | `Uint8Array \| string` | Yes | Message to sign |
+| `keypair` | `UniversalSigner` | No | Keypair for signing. Omit for browser |
+| `network` | `Network` | Backend only | **Required** when using local keypair |
+
+**Browser (OP_WALLET):**
+
+```typescript
+import { MessageSigner } from '@btc-vision/transaction';
+
+// Omit keypair and network - OP_WALLET handles everything
+const message = 'Prove I own bc1p...';
+const signed = await MessageSigner.tweakAndSignMessageAuto(message);
+```
+
+**Backend (local keypair):**
+
+```typescript
+import { MessageSigner } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+// MUST provide both keypair AND network for backend signing
+const message = 'Prove I own bc1p...';
+const signed = await MessageSigner.tweakAndSignMessageAuto(
+    message,
+    wallet.keypair,
+    networks.bitcoin  // Required for tweaking
+);
+```
+
+### signMLDSAMessageAuto
+
+Signs a message using quantum-resistant **ML-DSA** signatures.
+
+```typescript
+async signMLDSAMessageAuto(
+    message: Uint8Array | string,
+    mldsaKeypair?: QuantumBIP32Interface
+): Promise<MLDSASignedMessage>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message` | `Uint8Array \| string` | Yes | Message to sign |
+| `mldsaKeypair` | `QuantumBIP32Interface` | No | ML-DSA keypair. Omit for browser |
+
+**Browser (OP_WALLET):**
+
+```typescript
+import { MessageSigner } from '@btc-vision/transaction';
+
+const message = 'Quantum-secure message';
+const signed = await MessageSigner.signMLDSAMessageAuto(message);
+
+console.log('Signature:', Buffer.from(signed.signature).toString('hex'));
+console.log('Public Key:', Buffer.from(signed.publicKey).toString('hex'));
+console.log('Security Level:', signed.securityLevel);  // MLDSASecurityLevel.LEVEL2
+```
+
+**Backend (local keypair):**
+
+```typescript
+import { MessageSigner, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+const mnemonic = Mnemonic.generate(undefined, '', networks.bitcoin, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.derive(0);
+
+const message = 'Quantum-secure message';
+const signed = await MessageSigner.signMLDSAMessageAuto(message, wallet.mldsaKeypair);
+```
+
+### OP_WALLET Helper Methods
+
+These methods interact directly with the OP_WALLET browser extension:
+
+```typescript
+// Check if OP_WALLET is available in the browser
+MessageSigner.isOPWalletAvailable(): boolean
+
+// Get ML-DSA public key from connected wallet
+await MessageSigner.getMLDSAPublicKeyFromOPWallet(): Promise<Uint8Array | null>
+
+// Verify ML-DSA signature using OP_WALLET
+await MessageSigner.verifyMLDSAWithOPWallet(
+    message: Uint8Array | string,
+    signature: MLDSASignedMessage
+): Promise<boolean | null>
+
+// Try to sign with OP_WALLET (returns null if not available)
+await MessageSigner.trySignSchnorrWithOPWallet(message): Promise<SignedMessage | null>
+await MessageSigner.trySignMLDSAWithOPWallet(message): Promise<MLDSASignedMessage | null>
+```
+
+### Quick Reference
+
+| Method | Signature Type | Use Case |
+|--------|---------------|----------|
+| `signMessageAuto` | Schnorr (64 bytes) | General signing |
+| `tweakAndSignMessageAuto` | Schnorr (tweaked) | P2TR address ownership proofs |
+| `signMLDSAMessageAuto` | ML-DSA (2,420+ bytes) | Quantum-resistant signing |
+
+| Environment | What to Pass |
+|-------------|--------------|
+| **Browser** | Message only (omit keypair) |
+| **Backend** | Message + keypair (+ network for tweaked) |
 
 ## ML-DSA Signing
 
