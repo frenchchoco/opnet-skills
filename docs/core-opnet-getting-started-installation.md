@@ -71,7 +71,7 @@ cp setup/tsconfig-generic.json tsconfig.json
 
 | Option | Value | Reason |
 |--------|-------|--------|
-| `target` | `ES2025` | Required for BigInt, modern async features |
+| `target` | `ESNext` | Required for BigInt, modern async features |
 | `module` | `NodeNext` | ESM support for Node.js |
 | `moduleResolution` | `NodeNext` | Proper module resolution |
 | `strict` | `true` | Type-safe contract interactions |

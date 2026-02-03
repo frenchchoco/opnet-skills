@@ -42,4 +42,4 @@ cp setup/eslint-react.json .eslintrc.json
 
 - **Contracts**: Use `asconfig.json` for AssemblyScript. Do NOT use `tsconfig-generic.json` for contracts.
 - **ESLint**: Rename the eslint file to `.eslintrc.json` when copying.
-- **All configs**: Use ES2025 target and strict TypeScript settings.
+- **All configs**: Use ESNext target and strict TypeScript settings.

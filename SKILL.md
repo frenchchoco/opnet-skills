@@ -301,10 +301,10 @@ This makes manipulation economically irrational and ensures queue depth is a rel
 
 ### Configuration Verification Checklist
 
-- [ ] `tsconfig.json` matches `docs/tsconfig-generic.json` (or strict ES2025 for contracts)
+- [ ] `tsconfig.json` matches `docs/tsconfig-generic.json` (or strict ESNext for contracts)
 - [ ] `eslint.config.js` uses appropriate config from `docs/`
 - [ ] **NO `any` type anywhere** - This is FORBIDDEN
-- [ ] ES2025 compliant
+- [ ] ESNext compliant
 - [ ] Unit tests exist and pass
 
 ### IF ANY CHECK FAILS → REFUSE TO CODE UNTIL FIXED
@@ -326,7 +326,7 @@ From `docs/core-typescript-law-CompleteLaw.md`:
 | `object` (lowercase) | Use specific interfaces or `Record<string, T>` |
 | `Function` (uppercase) | Use specific signatures |
 | `{}` | Means "any non-nullish value". Use `Record<string, never>` |
-| Non-null assertion (`!`) | Use explicit null checks or optional chaining |
+| Non-null assertion (the ! operator) | Use explicit null checks or optional chaining |
 | Dead/duplicate code | Design is broken if present |
 | ESLint bypasses | Never |
 | Section separator comments | See below |
@@ -399,8 +399,8 @@ public async transfer(to: Address, amount: bigint): Promise<boolean> {
         "noImplicitOverride": true,
         "moduleResolution": "bundler",
         "module": "ESNext",
-        "target": "ES2025",
-        "lib": ["ES2025"],
+        "target": "ESNext",
+        "lib": ["ESNext"],
         "isolatedModules": true,
         "verbatimModuleSyntax": true
     }
@@ -878,7 +878,7 @@ Frontend configs **MUST** use `docs/eslint-react.json` and `docs/tsconfig-generi
 - Vite + React
 - Vitest for testing
 - ESLint with TypeScript strict mode
-- ES2025 target
+- ESNext target
 
 ### Caching (MANDATORY)
 
