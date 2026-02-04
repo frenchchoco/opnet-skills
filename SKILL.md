@@ -1,5 +1,5 @@
 ---
-name: opnet-dev-beta
+name: opnet-development
 description: Build on OPNet - Bitcoin L1 consensus layer for trustless smart contracts. Use when building AssemblyScript smart contracts, TypeScript libraries, React frontends, or Node plugins for OPNet. Triggers on Bitcoin smart contract development, OP20 tokens, OP721 NFTs, WebAssembly contracts, verify-dont-custody patterns, epoch mining, and OPNet architecture questions.
 ---
 
@@ -370,7 +370,15 @@ npm install
 - If package.json was created or modified, this is REQUIRED
 - Do NOT skip this step
 
-### Step 2: Run ESLint
+### Step 2: Run Prettier
+```bash
+npm run format
+```
+- Formats all code consistently
+- Run BEFORE linting to avoid formatting conflicts
+- Do NOT skip this step
+
+### Step 3: Run ESLint
 ```bash
 npm run lint
 ```
@@ -378,7 +386,7 @@ npm run lint
 - If errors exist, FIX THEM before proceeding
 - Do NOT say "you should run lint" - actually RUN IT
 
-### Step 3: Run TypeScript Check
+### Step 4: Run TypeScript Check
 ```bash
 npm run typecheck
 ```
@@ -386,14 +394,14 @@ npm run typecheck
 - MUST pass with zero errors
 - Fix all type errors before proceeding
 
-### Step 4: Build
+### Step 5: Build
 ```bash
 npm run build
 ```
-- Only run AFTER lint and typecheck pass
+- Only run AFTER format, lint, and typecheck pass
 - For contracts: verify .wasm file is generated
 
-### Step 5: Run Tests
+### Step 6: Run Tests
 ```bash
 npm run test
 ```
@@ -426,6 +434,7 @@ npm run test
 
 2. **Did I actually run the verification commands?**
    - Did I run `npm install`? (REQUIRED if package.json exists/changed)
+   - Did I run `npm run format`? (REQUIRED - Prettier formatting)
    - Did I run `npm run lint`? (REQUIRED - must pass with zero errors)
    - Did I run `npm run typecheck` or `npx tsc --noEmit`? (REQUIRED)
    - Did I run `npm run build`? (REQUIRED for deployable code)
@@ -774,11 +783,109 @@ This makes manipulation economically irrational and ensures queue depth is a rel
 | `tsconfig-generic.json` | TypeScript config (NOT for contracts) |
 | `asconfig.json` | AssemblyScript compiler config |
 
+### TypeScript is MANDATORY
+
+**JavaScript is NOT allowed. All code MUST be TypeScript.**
+
+- ❌ No `.js` files (except config files like `eslint.config.js`)
+- ❌ No `// @ts-check` in JS files - use real TypeScript
+- ❌ No `allowJs: true` in tsconfig
+- ✅ All source files must be `.ts` or `.tsx`
+- ✅ Strict mode enabled in tsconfig
+- ✅ All types explicitly defined
+
+---
+
+### Full Project Setup is MANDATORY
+
+**Before writing ANY code, the project MUST have:**
+
+```
+project/
+├── package.json          # With correct OPNet package versions
+├── tsconfig.json         # Matching docs/tsconfig-generic.json
+├── eslint.config.js      # Using appropriate config from docs/
+├── .prettierrc           # Prettier configuration
+├── .prettierignore       # Prettier ignore file
+├── src/                  # Source code directory
+│   └── index.ts          # Entry point
+└── tests/                # Test directory (if applicable)
+    └── *.test.ts
+```
+
+### Prettier Configuration (MANDATORY)
+
+**.prettierrc:**
+```json
+{
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "printWidth": 100,
+    "bracketSpacing": true,
+    "arrowParens": "always"
+}
+```
+
+**.prettierignore:**
+```
+node_modules/
+build/
+dist/
+*.wasm
+coverage/
+```
+
+**Package.json scripts (add these):**
+```json
+{
+    "scripts": {
+        "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
+    }
+}
+```
+
+**Run Prettier before committing:**
+```bash
+npm run format
+```
+
+**For Frontend (React/Vite), also include:**
+```
+├── vite.config.ts        # Vite configuration
+├── index.html            # Entry HTML
+└── src/
+    ├── App.tsx
+    ├── main.tsx
+    └── styles/           # CSS files (NO inline CSS)
+        └── variables.css
+```
+
+**For Contracts (AssemblyScript), also include:**
+```
+├── asconfig.json         # AssemblyScript config
+└── assembly/
+    ├── index.ts          # Contract entry point
+    └── contracts/
+        └── MyContract.ts
+```
+
+**You MUST create these files BEFORE writing application code.**
+
+---
+
 ### Configuration Verification Checklist
 
+- [ ] `package.json` exists with correct OPNet package versions
 - [ ] `tsconfig.json` matches `docs/tsconfig-generic.json` (or strict ESNext for contracts)
 - [ ] `eslint.config.js` uses appropriate config from `docs/`
+- [ ] `.prettierrc` exists with correct configuration
 - [ ] **NO `any` type anywhere** - This is FORBIDDEN
+- [ ] **NO inline CSS** - Use CSS modules, Tailwind, or external stylesheets
+- [ ] **NO JavaScript files** - TypeScript only
+- [ ] Code is formatted with Prettier (`npm run format`)
 - [ ] ESNext compliant
 - [ ] Unit tests exist and pass
 
@@ -805,6 +912,7 @@ From `docs/core-typescript-law-CompleteLaw.md`:
 | Dead/duplicate code | Design is broken if present |
 | ESLint bypasses | Never |
 | Section separator comments | See below |
+| **Inline CSS** | Use CSS modules, styled-components, or external stylesheets. No `style={{ }}` props. |
 
 ### FORBIDDEN: Section Separator Comments
 

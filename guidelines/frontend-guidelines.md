@@ -45,6 +45,7 @@ This document covers frontend architecture, code organization, caching, network 
 | Section separator comments | Lazy, unprofessional | TSDoc for every method |
 | `number` for large values | 53-bit precision loss | `bigint` for satoshis, token amounts |
 | Floats for financial values | Rounding errors | Fixed-point `bigint` |
+| **Inline CSS (`style={{ }}`)** | Unmaintainable, no reuse, no theming | CSS modules, styled-components, Tailwind, or external CSS |
 
 **Read the full TypeScript Law before proceeding.**
 
@@ -935,6 +936,55 @@ resolve: {
     dedupe: ['@noble/curves', '@noble/hashes', '@scure/base', 'buffer', 'react', 'react-dom']
 }
 ```
+
+---
+
+## Styling Rules (MANDATORY)
+
+### NO INLINE CSS - EVER
+
+**Inline CSS is FORBIDDEN. No exceptions.**
+
+```tsx
+// ❌ WRONG - NEVER DO THIS
+<div style={{ padding: '16px', backgroundColor: '#fff' }}>
+    <span style={{ color: 'red', fontSize: '14px' }}>Error</span>
+</div>
+
+// ❌ WRONG - Even with variables
+const styles = { padding: 16, margin: 8 };
+<div style={styles}>Content</div>
+
+// ✅ CORRECT - CSS Modules
+import styles from './Component.module.css';
+<div className={styles.container}>
+    <span className={styles.error}>Error</span>
+</div>
+
+// ✅ CORRECT - Tailwind CSS
+<div className="p-4 bg-white">
+    <span className="text-red-500 text-sm">Error</span>
+</div>
+
+// ✅ CORRECT - styled-components
+const Container = styled.div`
+    padding: var(--spacing-md);
+    background: var(--color-bg-primary);
+`;
+
+// ✅ CORRECT - External CSS with CSS variables
+<div className="card">
+    <span className="error-text">Error</span>
+</div>
+```
+
+**Why inline CSS is forbidden:**
+- No reusability - same styles repeated everywhere
+- No theming support - can't use CSS variables properly
+- No responsive design - can't use media queries
+- No pseudo-selectors - can't do `:hover`, `:focus`, etc.
+- Harder to maintain - styles scattered across components
+- Worse performance - styles recalculated on every render
 
 ---
 
