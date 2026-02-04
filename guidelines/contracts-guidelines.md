@@ -8,13 +8,37 @@ This document covers contract code patterns, storage, SafeMath, and common mista
 
 ## Table of Contents
 
-1. [Contract Entry Point](#contract-entry-point)
-2. [Contract Class Patterns](#contract-class-patterns)
-3. [Storage and Pointers](#storage-and-pointers)
-4. [u256 and SafeMath](#u256-and-safemath)
-5. [Common Imports](#common-imports)
-6. [Gas Optimization](#gas-optimization)
-7. [Common Contract Mistakes](#common-contract-mistakes)
+1. [TypeScript Law (MANDATORY)](#typescript-law-mandatory)
+2. [Contract Entry Point](#contract-entry-point)
+3. [Contract Class Patterns](#contract-class-patterns)
+4. [Storage and Pointers](#storage-and-pointers)
+5. [u256 and SafeMath](#u256-and-safemath)
+6. [Common Imports](#common-imports)
+7. [Gas Optimization](#gas-optimization)
+8. [Common Contract Mistakes](#common-contract-mistakes)
+
+---
+
+## TypeScript Law (MANDATORY)
+
+**BEFORE WRITING ANY CONTRACT CODE, YOU MUST READ AND FOLLOW:**
+
+`docs/core-typescript-law-CompleteLaw.md`
+
+**The TypeScript Law is NON-NEGOTIABLE.** Every line of code must comply. Violations lead to exploitable, broken code.
+
+### Key Rules for Contracts
+
+| FORBIDDEN | WHY | USE INSTEAD |
+|-----------|-----|-------------|
+| `any` | Runtime bugs, defeats type checking | Proper types, generics |
+| Raw arithmetic (`+`, `-`, `*`) on u256 | Overflow/underflow | `SafeMath.add()`, `SafeMath.sub()`, etc. |
+| `while` loops | Unbounded gas consumption | Bounded `for` loops |
+| Iterating all map keys | O(n) gas explosion | Indexed lookups, stored aggregates |
+| Unbounded arrays | Grows forever | Cap size, use pagination |
+| Section separator comments | Lazy, unprofessional | TSDoc for every method |
+
+**Read the full TypeScript Law before proceeding.**
 
 ---
 

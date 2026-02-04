@@ -8,16 +8,44 @@ This document covers frontend architecture, code organization, caching, network 
 
 ## Table of Contents
 
-1. [Code Architecture](#code-architecture)
-2. [Project Structure](#project-structure)
-3. [Caching and Reuse](#caching-and-reuse)
-4. [Network Configuration](#network-configuration)
-5. [Wallet Integration](#wallet-integration)
-6. [Utility Patterns](#utility-patterns)
-7. [Component Patterns](#component-patterns)
-8. [TypeScript Standards](#typescript-standards)
-9. [Common Frontend Mistakes](#common-frontend-mistakes)
-10. [Theming with CSS Variables](#theming-with-css-variables)
+1. [TypeScript Law (MANDATORY)](#typescript-law-mandatory)
+2. [Code Architecture](#code-architecture)
+3. [Project Structure](#project-structure)
+4. [Caching and Reuse](#caching-and-reuse)
+5. [Network Configuration](#network-configuration)
+6. [Wallet Integration](#wallet-integration)
+7. [Utility Patterns](#utility-patterns)
+8. [Component Patterns](#component-patterns)
+9. [TypeScript Standards](#typescript-standards)
+10. [Common Frontend Mistakes](#common-frontend-mistakes)
+11. [Theming with CSS Variables](#theming-with-css-variables)
+
+---
+
+## TypeScript Law (MANDATORY)
+
+**BEFORE WRITING ANY FRONTEND CODE, YOU MUST READ AND FOLLOW:**
+
+`docs/core-typescript-law-CompleteLaw.md`
+
+**The TypeScript Law is NON-NEGOTIABLE.** Every line of code must comply. Violations lead to exploitable, broken code.
+
+### Key Rules for Frontend
+
+| FORBIDDEN | WHY | USE INSTEAD |
+|-----------|-----|-------------|
+| `any` | Runtime bugs, defeats type checking | Proper types, generics |
+| `unknown` (except boundaries) | Lazy escape hatch | Model actual types |
+| `object` (lowercase) | Too broad, no shape info | `Record<string, T>` or interface |
+| `Function` (uppercase) | No parameter/return safety | Specific function signatures |
+| `!` (non-null assertion) | Hides null bugs | Explicit checks, `?.` |
+| `// @ts-ignore` | Hides errors | Fix the actual error |
+| `eslint-disable` | Bypasses safety | Fix the actual issue |
+| Section separator comments | Lazy, unprofessional | TSDoc for every method |
+| `number` for large values | 53-bit precision loss | `bigint` for satoshis, token amounts |
+| Floats for financial values | Rounding errors | Fixed-point `bigint` |
+
+**Read the full TypeScript Law before proceeding.**
 
 ---
 

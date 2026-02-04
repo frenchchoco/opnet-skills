@@ -6,6 +6,29 @@ This document covers package versions, configurations, and project setup for ALL
 
 ---
 
+## TYPESCRIPT LAW (MANDATORY - READ FIRST)
+
+**BEFORE WRITING ANY CODE, YOU MUST READ AND FOLLOW:**
+
+**`docs/core-typescript-law-CompleteLaw.md`**
+
+**The TypeScript Law is NON-NEGOTIABLE.** It defines strict rules for type safety, code quality, and security. Every line of code must comply. Violations lead to exploitable, broken code that will be rejected.
+
+**Key prohibitions:**
+- `any` type - FORBIDDEN everywhere
+- `unknown` (except at system boundaries) - FORBIDDEN
+- `object` (lowercase) - FORBIDDEN
+- `Function` (uppercase) - FORBIDDEN
+- `{}` empty object type - FORBIDDEN
+- `!` non-null assertion - FORBIDDEN
+- `// @ts-ignore` - FORBIDDEN
+- `eslint-disable` - FORBIDDEN
+- Section separator comments (`// ===`, `// ---`) - FORBIDDEN
+
+**Read the full TypeScript Law before proceeding.**
+
+---
+
 ## Table of Contents
 
 1. [Package Versions](#package-versions)

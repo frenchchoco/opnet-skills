@@ -8,14 +8,39 @@
 
 ## Table of Contents
 
-1. [Test Environment Overview](#test-environment-overview)
-2. [Project Structure](#project-structure)
-3. [Test Dependencies](#test-dependencies)
-4. [Test Configuration](#test-configuration)
-5. [Test Patterns](#test-patterns)
-6. [ContractRuntime Wrapper](#contractruntime-wrapper)
-7. [Blockchain Mocking](#blockchain-mocking)
-8. [Common Test Mistakes](#common-test-mistakes)
+1. [TypeScript Law (MANDATORY)](#typescript-law-mandatory)
+2. [Test Environment Overview](#test-environment-overview)
+3. [Project Structure](#project-structure)
+4. [Test Dependencies](#test-dependencies)
+5. [Test Configuration](#test-configuration)
+6. [Test Patterns](#test-patterns)
+7. [ContractRuntime Wrapper](#contractruntime-wrapper)
+8. [Blockchain Mocking](#blockchain-mocking)
+9. [Common Test Mistakes](#common-test-mistakes)
+
+---
+
+## TypeScript Law (MANDATORY)
+
+**BEFORE WRITING ANY TEST CODE, YOU MUST READ AND FOLLOW:**
+
+`docs/core-typescript-law-CompleteLaw.md`
+
+**The TypeScript Law is NON-NEGOTIABLE.** Every line of code must comply. Violations lead to exploitable, broken code.
+
+### Key Rules for Tests
+
+| FORBIDDEN | WHY | USE INSTEAD |
+|-----------|-----|-------------|
+| `any` | Runtime bugs, defeats type checking | Proper types, generics |
+| `unknown` (except boundaries) | Lazy escape hatch | Model actual types |
+| `!` (non-null assertion) | Hides null bugs | Explicit checks, `?.` |
+| `// @ts-ignore` | Hides errors | Fix the actual error |
+| `eslint-disable` | Bypasses safety | Fix the actual issue |
+| Section separator comments | Lazy, unprofessional | TSDoc for every method |
+| `number` for large values | 53-bit precision loss | `bigint` for satoshis, IDs, heights |
+
+**Read the full TypeScript Law before proceeding.**
 
 ---
 
