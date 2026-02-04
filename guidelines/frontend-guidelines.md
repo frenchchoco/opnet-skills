@@ -853,8 +853,80 @@ function Balance() {
 ```json
 {
     "vite": "^7.3.1",
-	"vite-plugin-dts": "^4.5.4",
-	"vite-plugin-node-polyfills": "^0.25.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-plugin-node-polyfills": "^0.25.0",
+    "vite-plugin-eslint2": "^5.0.0"
+}
+```
+
+### 8. Incomplete Vite Config
+
+**WRONG - Missing critical settings:**
+```typescript
+// Minimal config breaks OPNet apps
+export default defineConfig({
+    plugins: [react(), nodePolyfills()]
+});
+```
+
+**CORRECT - Use the complete config from `guidelines/setup-guidelines.md`**
+
+Key settings you MUST include:
+
+| Setting | Why Required |
+|---------|--------------|
+| `nodePolyfills` before `react()` | Plugin order matters |
+| `crypto: 'crypto-browserify'` | Browser crypto for signing |
+| `undici` alias to browser fetch | opnet uses undici internally |
+| `dedupe` for noble/scure libs | Multiple copies break signatures |
+| `manualChunks` | Proper code splitting |
+| `external` for node: modules | Can't run in browser |
+| `exclude: ['crypto-browserify']` | Circular deps break pre-bundling |
+
+### 9. Missing Browser Shims
+
+**WRONG - Crypto operations fail:**
+```typescript
+// No crypto-browserify override
+nodePolyfills({
+    globals: { Buffer: true }
+})
+```
+
+**CORRECT:**
+```typescript
+nodePolyfills({
+    globals: {
+        Buffer: true,
+        global: true,
+        process: true
+    },
+    overrides: {
+        crypto: 'crypto-browserify'  // REQUIRED for signing
+    }
+})
+```
+
+### 10. Missing undici Alias
+
+**WRONG - Network requests fail:**
+```typescript
+resolve: {
+    alias: {
+        buffer: 'buffer/'
+    }
+}
+```
+
+**CORRECT:**
+```typescript
+resolve: {
+    alias: {
+        global: 'global',
+        // opnet uses undici for fetch - needs browser shim
+        undici: resolve(__dirname, 'node_modules/opnet/src/fetch/fetch-browser.js')
+    },
+    dedupe: ['@noble/curves', '@noble/hashes', '@scure/base', 'buffer', 'react', 'react-dom']
 }
 ```
 

@@ -39,6 +39,9 @@ This document covers package versions, configurations, and project setup for ALL
 4. [Frontend Project Setup](#frontend-project-setup)
 5. [TypeScript Law](#typescript-law)
 6. [ESLint Configuration](#eslint-configuration)
+7. [Code Verification Order (MANDATORY)](#code-verification-order-mandatory)
+8. [Project Delivery (Zip Files)](#project-delivery-zip-files)
+9. [Common Setup Mistakes](#common-setup-mistakes)
 
 ---
 
@@ -59,7 +62,7 @@ This document covers package versions, configurations, and project setup for ALL
         "@btc-vision/opnet-transform": "^0.2.1"
     },
     "overrides": {
-        "@noble/hashes": "2.0.1"
+        "@noble/hashes": "2.1.0"
     }
 }
 ```
@@ -82,7 +85,7 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
         "@types/node": "^25.0.0"
     },
     "overrides": {
-        "@noble/hashes": "2.0.1"
+        "@noble/hashes": "2.1.0"
     }
 }
 ```
@@ -108,7 +111,7 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
         "typescript": "^5.9.3"
     },
     "overrides": {
-        "@noble/hashes": "2.0.1"
+        "@noble/hashes": "2.1.0"
     }
 }
 ```
@@ -259,35 +262,170 @@ my-frontend/
 └── tsconfig.json
 ```
 
-### vite.config.ts
+### vite.config.ts (COMPLETE - USE THIS)
+
+**This is a production-ready OPNet dApp configuration. Do not simplify it.**
 
 ```typescript
+import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import eslint from 'vite-plugin-eslint2';
 
 export default defineConfig({
+    base: '/',
     plugins: [
-        react(),
+        // Node.js polyfills MUST come first
         nodePolyfills({
-            include: ['buffer', 'crypto', 'stream', 'util'],
             globals: {
                 Buffer: true,
                 global: true,
-                process: true,
+                process: true
             },
+            overrides: {
+                crypto: 'crypto-browserify'
+            }
         }),
+        react(),
+        // ESLint plugin - validates on every save
+        eslint({
+            cache: false
+        })
     ],
-    define: {
-        'process.env': {},
-        global: 'globalThis',
-    },
     resolve: {
         alias: {
-            buffer: 'buffer/',
+            global: 'global',
+            // Browser shim for Node.js fetch - REQUIRED for opnet
+            undici: resolve(__dirname, 'node_modules/opnet/src/fetch/fetch-browser.js')
         },
+        // Resolve order matters for hybrid packages
+        mainFields: ['module', 'main', 'browser'],
+        // Dedupe prevents multiple copies of shared deps
+        dedupe: ['@noble/curves', '@noble/hashes', '@scure/base', 'buffer', 'react', 'react-dom']
     },
+    build: {
+        commonjsOptions: {
+            strictRequires: true,
+            transformMixedEsModules: true
+        },
+        rollupOptions: {
+            output: {
+                entryFileNames: '[name].js',
+                chunkFileNames: 'js/[name]-[hash].js',
+                assetFileNames: (assetInfo) => {
+                    const name = assetInfo.names?.[0] ?? '';
+                    const info = name.split('.');
+                    const ext = info[info.length - 1];
+                    if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext || '')) {
+                        return `images/[name][extname]`;
+                    }
+                    if (/woff|woff2|eot|ttf|otf/i.test(ext || '')) {
+                        return `fonts/[name][extname]`;
+                    }
+                    if (/css/i.test(ext || '')) {
+                        return `css/[name][extname]`;
+                    }
+                    return `assets/[name][extname]`;
+                },
+                // Manual chunk splitting for optimal loading
+                manualChunks(id) {
+                    // crypto-browserify has circular deps - don't split
+                    if (id.includes('crypto-browserify') || id.includes('randombytes')) {
+                        return undefined;
+                    }
+                    if (id.includes('node_modules')) {
+                        // Noble crypto - shared across packages
+                        if (id.includes('@noble/curves')) return 'noble-curves';
+                        if (id.includes('@noble/hashes')) return 'noble-hashes';
+                        if (id.includes('@scure/')) return 'scure';
+
+                        // @btc-vision packages - split individually
+                        if (id.includes('@btc-vision/transaction')) return 'btc-transaction';
+                        if (id.includes('@btc-vision/bitcoin')) return 'btc-bitcoin';
+                        if (id.includes('@btc-vision/bip32')) return 'btc-bip32';
+                        if (id.includes('@btc-vision/post-quantum')) return 'btc-post-quantum';
+                        if (id.includes('@btc-vision/wallet-sdk')) return 'btc-wallet-sdk';
+                        if (id.includes('@btc-vision/logger')) return 'btc-logger';
+                        if (id.includes('@btc-vision/passworder')) return 'btc-passworder';
+
+                        // opnet library
+                        if (id.includes('node_modules/opnet')) return 'opnet';
+
+                        // Bitcoin utilities
+                        if (id.includes('bip39')) return 'bip39';
+                        if (id.includes('ecpair') || id.includes('tiny-secp256k1')) return 'bitcoin-utils';
+                        if (id.includes('bitcore-lib')) return 'bitcore';
+
+                        // React + UI - MUST be in same chunk for initialization order
+                        if (
+                            id.includes('node_modules/react-dom') ||
+                            id.includes('node_modules/react/') ||
+                            id.includes('node_modules/scheduler') ||
+                            id.includes('antd') ||
+                            id.includes('@ant-design') ||
+                            id.includes('rc-') ||
+                            id.includes('@rc-component')
+                        )
+                            return 'react-ui';
+
+                        // Other large deps
+                        if (id.includes('ethers')) return 'ethers';
+                        if (id.includes('protobufjs') || id.includes('@protobufjs')) return 'protobuf';
+                        if (id.includes('lodash')) return 'lodash';
+                    }
+                }
+            },
+            // Exclude Node.js-only modules from bundle
+            external: [
+                'worker_threads',
+                'node:sqlite',
+                'node:diagnostics_channel',
+                'node:async_hooks',
+                'node:perf_hooks',
+                'node:worker_threads'
+            ]
+        },
+        target: 'esnext',
+        modulePreload: false,
+        cssCodeSplit: false,
+        assetsInlineLimit: 10000,
+        chunkSizeWarningLimit: 3000
+    },
+    optimizeDeps: {
+        // Pre-bundle these for faster dev server startup
+        include: ['react', 'react-dom', 'buffer', 'process', 'stream-browserify'],
+        // Exclude packages that need special handling
+        exclude: ['@btc-vision/transaction', 'crypto-browserify']
+    }
 });
+```
+
+### Vite Config Key Points
+
+| Setting | Why Required |
+|---------|--------------|
+| `nodePolyfills` first | Must run before React plugin |
+| `crypto: 'crypto-browserify'` | Browser crypto shim for signing |
+| `undici` alias | opnet uses undici for fetch, needs browser shim |
+| `dedupe` array | Prevents multiple copies of crypto libs (breaks signatures) |
+| `manualChunks` | Optimal code splitting for OPNet apps |
+| `external` array | Excludes Node.js modules that can't run in browser |
+| `exclude: ['crypto-browserify']` | Has circular deps, must not be pre-bundled |
+
+### Required Dev Dependencies
+
+```json
+{
+    "devDependencies": {
+        "vite": "^7.3.1",
+        "@vitejs/plugin-react": "^4.3.4",
+        "vite-plugin-node-polyfills": "^0.25.0",
+        "vite-plugin-eslint2": "^5.0.0",
+        "crypto-browserify": "^3.12.1",
+        "stream-browserify": "^3.0.0"
+    }
+}
 ```
 
 ### tsconfig.json (Frontend)
@@ -408,6 +546,100 @@ Use `docs/eslint-react.json` from opnet-skills.
 - `@typescript-eslint/no-explicit-any`: "error"
 - `@typescript-eslint/explicit-function-return-type`: "error"
 - `@typescript-eslint/no-unused-vars`: "error"
+
+---
+
+## Code Verification Order (MANDATORY)
+
+**Before considering code complete, verify in this order:**
+
+| Order | Check | Command | Fix Before Proceeding |
+|-------|-------|---------|----------------------|
+| 1 | **ESLint** | `npm run lint` | Fix ALL lint errors first |
+| 2 | **TypeScript** | `npm run typecheck` or `tsc --noEmit` | Fix type errors after lint passes |
+| 3 | **Build** | `npm run build` | Only build after lint + types pass |
+| 4 | **Tests** | `npm run test` | Run tests on clean build |
+
+**WHY THIS ORDER:**
+- ESLint catches `any` types, missing return types, unused variables
+- TypeScript catches type mismatches, null safety issues
+- Running TypeScript first hides ESLint errors that would catch forbidden patterns
+- A passing build with lint errors means broken code shipped
+
+**Example package.json scripts:**
+
+```json
+{
+    "scripts": {
+        "lint": "eslint src --ext .ts,.tsx",
+        "lint:fix": "eslint src --ext .ts,.tsx --fix",
+        "typecheck": "tsc --noEmit",
+        "build": "npm run lint && npm run typecheck && tsc",
+        "test": "npm run build && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    }
+}
+```
+
+**NEVER skip ESLint. NEVER ship code with lint errors.**
+
+---
+
+## Project Delivery (Zip Files)
+
+**When delivering a project as a zip file:**
+
+### NEVER Include
+
+| Exclude | Why |
+|---------|-----|
+| `node_modules/` | 100MB+ of dependencies, recipient runs `npm install` |
+| `build/` or `dist/` | Generated files, recipient runs `npm run build` |
+| `.git/` | Repository history not needed |
+| `*.wasm` | Compiled output, regenerated from source |
+| `.env` | Contains secrets, NEVER share |
+
+### Correct Zip Command
+
+```bash
+# From project root
+zip -r project.zip . -x "node_modules/*" -x "build/*" -x "dist/*" -x ".git/*" -x "*.wasm" -x ".env"
+```
+
+### Alternative: Use .zipignore or Script
+
+```bash
+# Create delivery script
+cat > zip-project.sh << 'EOF'
+#!/bin/bash
+PROJECT_NAME=$(basename "$PWD")
+zip -r "../${PROJECT_NAME}.zip" . \
+    -x "node_modules/*" \
+    -x "build/*" \
+    -x "dist/*" \
+    -x ".git/*" \
+    -x "*.wasm" \
+    -x ".env" \
+    -x ".env.*" \
+    -x "*.log"
+echo "Created ../${PROJECT_NAME}.zip"
+EOF
+chmod +x zip-project.sh
+```
+
+### What TO Include
+
+- All source files (`src/`, `tests/`)
+- Configuration files (`package.json`, `tsconfig.json`, `asconfig.json`, `eslint.config.js`)
+- Documentation (`README.md`)
+- Lock file (`package-lock.json`) - ensures reproducible installs
+
+**Recipient setup:**
+```bash
+unzip project.zip -d my-project
+cd my-project
+npm install --legacy-peer-deps
+npm run build
+```
 
 ---
 

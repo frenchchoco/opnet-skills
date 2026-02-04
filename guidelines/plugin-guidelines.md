@@ -113,7 +113,7 @@ This document covers plugin architecture, lifecycle hooks, database access, reor
         "@types/node": "^25.0.0"
     },
     "overrides": {
-        "@noble/hashes": "2.0.1"
+        "@noble/hashes": "2.1.0"
     }
 }
 ```

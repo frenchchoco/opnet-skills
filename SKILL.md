@@ -140,6 +140,141 @@ You MUST read the docs files listed below IN ORDER before writing ANY code.
 
 ---
 
+### For Generic Questions (Architecture, Concepts, Best Practices)
+
+**For questions NOT tied to a specific project type, read based on the question:**
+
+#### Example Questions and What to Read
+
+| Example Question | Read These First |
+|------------------|------------------|
+| "How does OPNet work?" | `docs/core-opnet-getting-started-overview.md`, this SKILL.md "What is OPNet" section |
+| "Can OPNet survive 51% attacks?" | This SKILL.md "Security Model" section, `docs/core-opnet-epochs-overview.md` |
+| "How does airdrop work on OPNet?" | `docs/core-opnet-address-systems-airdrop-pattern.md`, this SKILL.md "The Two Address Systems" section |
+| "Why can't I just loop and transfer tokens?" | This SKILL.md "WHY YOU CANNOT JUST LOOP AND TRANSFER" section |
+| "What's the difference between OPNet and Runes/Ordinals?" | This SKILL.md "Why OPNet Requires Consensus" section |
+| "How do epochs work?" | `docs/core-opnet-epochs-overview.md`, `docs/core-OIP-OIP-0004.md` |
+| "What is transaction pinning?" | This SKILL.md "CSV: The Critical Anti-Pinning Mechanism" section |
+| "Why do I need CSV timelocks?" | This SKILL.md "CSV: The Critical Anti-Pinning Mechanism" section |
+| "How do Bitcoin addresses relate to OPNet addresses?" | `docs/core-opnet-address-systems-airdrop-pattern.md` |
+| "What is ML-DSA / quantum resistance?" | `docs/core-transaction-quantum-support-README.md` |
+| "How do I handle chain reorgs?" | `docs/core-opnet-blocks-reorg-detection.md` |
+| "Why can't contracts hold BTC?" | This SKILL.md "Key Principles" section, "NativeSwap" section |
+| "What is verify-don't-custody?" | This SKILL.md "Key Principles" section |
+| "How does NativeSwap work?" | This SKILL.md "NativeSwap: How to Build a Real DEX on Bitcoin" section |
+| "Why do swaps need reservations?" | This SKILL.md "Two-Phase Commit" section |
+| "What is queue impact / slashing?" | This SKILL.md "Queue Impact" and "Slashing" sections |
+
+#### Topics Reference
+
+| Topic | Files to Read |
+|-------|---------------|
+| OPNet architecture | `docs/core-opnet-getting-started-overview.md` |
+| Consensus vs indexing | This SKILL.md - "Why OPNet Requires Consensus" section |
+| Epochs and mining | `docs/core-opnet-epochs-overview.md`, `docs/core-OIP-OIP-0004.md` |
+| Transaction flow | `docs/core-opnet-transactions-broadcasting.md` |
+| Block processing | `docs/core-opnet-blocks-block-operations.md` |
+| Reorg handling | `docs/core-opnet-blocks-reorg-detection.md` |
+| Two address systems | `docs/core-opnet-address-systems-airdrop-pattern.md` |
+| ML-DSA quantum signatures | `docs/core-transaction-quantum-support-README.md` |
+| Public key operations | `docs/core-opnet-public-keys-public-key-operations.md` |
+| OP20 tokens | `docs/core-OIP-OIP-0020.md`, `docs/core-opnet-abi-reference-op20-abi.md` |
+| OP721 NFTs | `docs/core-OIP-OIP-0721.md`, `docs/core-opnet-abi-reference-op721-abi.md` |
+| UTXO handling | `docs/core-opnet-bitcoin-utxos.md` |
+| Sending Bitcoin | `docs/core-opnet-bitcoin-sending-bitcoin.md` |
+| PSBT signing | `docs/clients-bitcoin-psbt.md` |
+| Contract security | `docs/contracts-btc-runtime-core-concepts-security.md` |
+| Gas optimization | `docs/contracts-btc-runtime-gas-optimization.md` |
+
+**IMPORTANT: For conceptual questions, read the relevant docs/sections BEFORE answering. Do not guess or make assumptions about how OPNet works.**
+
+---
+
+### For Security Auditing
+
+**DISCLAIMER: AI-assisted audits have limitations. Always include this warning:**
+
+```
+IMPORTANT DISCLAIMER: This audit is AI-assisted and may contain errors,
+false positives, or miss critical vulnerabilities. This is NOT a substitute
+for a professional security audit by experienced human auditors.
+Do NOT deploy to production based solely on this review.
+Always engage professional auditors for contracts handling real value.
+```
+
+#### Before Auditing, Read
+
+| Code Type | Required Reading |
+|-----------|------------------|
+| Smart Contracts | `docs/contracts-btc-runtime-core-concepts-security.md`, `docs/contracts-btc-runtime-gas-optimization.md` |
+| All Code | `docs/core-typescript-law-CompleteLaw.md` |
+| DEX/Swap Code | This SKILL.md - CSV, NativeSwap, Slashing sections |
+| Frontend | `guidelines/frontend-guidelines.md` - Common Mistakes section |
+| Backend | `guidelines/backend-guidelines.md` - Security Checklist |
+| Plugins | `guidelines/plugin-guidelines.md` - Reorg Handling section |
+
+#### Smart Contract Audit Checklist
+
+| Category | Check For |
+|----------|-----------|
+| **Arithmetic** | All u256 operations use SafeMath (no raw `+`, `-`, `*`, `/`) |
+| **Overflow/Underflow** | SafeMath.add(), SafeMath.sub(), SafeMath.mul(), SafeMath.div() |
+| **Access Control** | onlyOwner checks, authorization on sensitive methods |
+| **Reentrancy** | State changes BEFORE external calls (checks-effects-interactions) |
+| **Gas/Loops** | No `while` loops, all `for` loops bounded, no unbounded iterations |
+| **Storage** | No iterating all map keys, stored aggregates for totals |
+| **Input Validation** | All user inputs validated, bounds checked |
+| **Integer Handling** | u256 created via fromString() for large values, not arithmetic |
+
+#### TypeScript/Frontend/Backend Audit Checklist
+
+| Category | Check For |
+|----------|-----------|
+| **Type Safety** | No `any`, no `!` assertions, no `@ts-ignore` |
+| **Null Safety** | Explicit null checks, optional chaining used correctly |
+| **BigInt** | All satoshi/token amounts use `bigint`, not `number` |
+| **No Floats** | No floating point for financial calculations |
+| **Caching** | Provider/contract instances cached, not recreated |
+| **Input Validation** | Address validation, amount validation, bounds checking |
+| **Error Handling** | Errors caught and handled, no silent failures |
+
+#### Bitcoin-Specific Audit Checklist
+
+| Category | Check For |
+|----------|-----------|
+| **CSV Timelocks** | All swap recipient addresses use CSV (anti-pinning) |
+| **UTXO Handling** | Proper UTXO selection, dust outputs avoided |
+| **Transaction Malleability** | Signatures not assumed immutable before confirmation |
+| **Fee Sniping** | Proper locktime handling |
+| **Reorg Handling** | Data deleted/reverted for reorged blocks |
+
+#### DEX/Swap Audit Checklist
+
+| Category | Check For |
+|----------|-----------|
+| **Reservation System** | Prices locked at reservation, not execution |
+| **Slippage Protection** | Maximum slippage enforced |
+| **Front-Running** | Reservation system prevents front-running |
+| **Queue Manipulation** | Slashing penalties for queue abuse |
+| **Partial Fills** | Atomic coordination of multi-provider payments |
+
+#### Common Vulnerabilities in OPNet Code
+
+| Vulnerability | How to Detect |
+|---------------|---------------|
+| **Integer Overflow** | Raw arithmetic on u256 without SafeMath |
+| **Unbounded Loops** | `while` loops, `for` loops without max iteration |
+| **Missing Reorg Handling** | Plugin without `onReorg()` implementation |
+| **Type Coercion Bugs** | `any` type, missing null checks |
+| **Precision Loss** | `number` for satoshis, floats for money |
+| **Multiple Instances** | Provider/contract created per-request instead of cached |
+| **Missing CSV** | Swap recipient addresses without timelock |
+| **State After External Call** | Reentrancy - state modified after external interaction |
+
+**ALWAYS end audit reports with the disclaimer. NEVER claim the audit is complete or guarantees security.**
+
+---
+
 ## VERIFICATION CHECKPOINT
 
 **BEFORE writing ANY code, confirm:**
@@ -153,6 +288,36 @@ You MUST read the docs files listed below IN ORDER before writing ANY code.
 **If you cannot check ALL boxes, GO BACK AND READ THE DOCS.**
 
 **Code written without reading the docs will be broken. There are no shortcuts.**
+
+---
+
+## CODE VERIFICATION ORDER
+
+**Before considering code complete, verify in this order:**
+
+1. **ESLint first** - `npm run lint` - catches `any`, missing return types, forbidden patterns
+2. **TypeScript second** - `npm run typecheck` - catches type mismatches after lint passes
+3. **Build third** - `npm run build` - only after lint + types pass
+4. **Tests last** - `npm run test` - run on clean build
+
+**NEVER skip ESLint. NEVER ship code with lint errors.**
+
+---
+
+## PROJECT DELIVERY
+
+**When creating zip files for delivery:**
+
+**NEVER include:**
+- `node_modules/` - recipient runs `npm install`
+- `build/` or `dist/` - recipient runs `npm run build`
+- `.git/` - repository history
+- `.env` - contains secrets
+
+**Correct zip command:**
+```bash
+zip -r project.zip . -x "node_modules/*" -x "build/*" -x "dist/*" -x ".git/*" -x "*.wasm" -x ".env"
+```
 
 ---
 
