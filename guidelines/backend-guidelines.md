@@ -4,6 +4,14 @@
 
 This document covers backend architecture, required frameworks, threading, caching, and API best practices.
 
+### MANDATORY: Always Update Packages
+
+**After `npm install`, ALWAYS run:**
+
+```bash
+npx npm-check-updates -u && npm install
+```
+
 ---
 
 ## Table of Contents
@@ -137,8 +145,8 @@ This document covers backend architecture, required frameworks, threading, cachi
         "@btc-vision/bitcoin": "7.0.0-alpha.10"
     },
     "devDependencies": {
-        "typescript": "^5.9.3",
-        "@types/node": "^25.0.0"
+        "typescript": "latest",
+        "@types/node": "latest"
     },
     "overrides": {
         "@noble/hashes": "2.0.1"

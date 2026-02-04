@@ -4,6 +4,16 @@
 
 This document covers frontend architecture, code organization, caching, network handling, and best practices.
 
+### MANDATORY: Always Update Packages
+
+**After `npm install`, ALWAYS run:**
+
+```bash
+npx npm-check-updates -u && npm install
+```
+
+**Never skip this step.** This ensures all tooling packages are at their latest versions.
+
 ---
 
 ## Table of Contents
@@ -938,7 +948,7 @@ function Balance() {
 
 ### 7. Vite Version Incompatibility
 
-**WRONG:**
+**WRONG - Never use specific versions for tooling:**
 ```json
 {
     "vite": "^6.0.0",
@@ -946,13 +956,13 @@ function Balance() {
 }
 ```
 
-**CORRECT:**
+**CORRECT - Always use "latest" for tooling:**
 ```json
 {
-    "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-node-polyfills": "^0.25.0",
-    "vite-plugin-eslint2": "^5.0.0"
+    "vite": "latest",
+    "vite-plugin-dts": "latest",
+    "vite-plugin-node-polyfills": "latest",
+    "vite-plugin-eslint2": "latest"
 }
 ```
 

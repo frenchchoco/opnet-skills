@@ -4,6 +4,14 @@
 
 This document covers plugin architecture, lifecycle hooks, database access, reorg handling, and best practices.
 
+### MANDATORY: Always Update Packages
+
+**After `npm install`, ALWAYS run:**
+
+```bash
+npx npm-check-updates -u && npm install
+```
+
 ---
 
 ## Table of Contents
@@ -107,10 +115,10 @@ This document covers plugin architecture, lifecycle hooks, database access, reor
         "@btc-vision/bitcoin": "7.0.0-alpha.10"
     },
     "devDependencies": {
-        "typescript": "^5.9.3",
-        "bytenode": "^1.5.0",
-        "gulp": "^5.0.0",
-        "@types/node": "^25.0.0"
+        "typescript": "latest",
+        "bytenode": "latest",
+        "gulp": "latest",
+        "@types/node": "latest"
     },
     "overrides": {
         "@noble/hashes": "2.0.1"

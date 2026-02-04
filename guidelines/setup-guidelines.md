@@ -49,6 +49,16 @@ This document covers package versions, configurations, and project setup for ALL
 
 **NEVER GUESS PACKAGE VERSIONS.** OPNet packages are actively developed with beta releases. Using wrong versions causes build failures.
 
+### MANDATORY: Update Packages After Setup
+
+**ALWAYS run this command after creating any project or after `npm install`:**
+
+```bash
+npx npm-check-updates -u && npm install
+```
+
+This ensures all packages are updated to their latest compatible versions. **Never skip this step.**
+
 ### Contract Dependencies
 
 ```json
@@ -79,10 +89,10 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
         "@btc-vision/transaction": "1.8.0-beta.9"
     },
     "devDependencies": {
-        "typescript": "^5.9.3",
-        "ts-node": "^10.9.2",
-        "gulp": "^5.0.0",
-        "@types/node": "^25.0.0"
+        "typescript": "latest",
+        "ts-node": "latest",
+        "gulp": "latest",
+        "@types/node": "latest"
     },
     "overrides": {
         "@noble/hashes": "2.0.1"
@@ -95,8 +105,8 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
 ```json
 {
     "dependencies": {
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
+        "react": "latest",
+        "react-dom": "latest",
         "opnet": "1.8.1-beta.12",
         "@btc-vision/transaction": "1.8.0-beta.9",
         "@btc-vision/bitcoin": "7.0.0-alpha.10",
@@ -105,18 +115,28 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
         "@btc-vision/walletconnect": "1.10.0-beta.0"
     },
     "devDependencies": {
-        "vite": "^7.3.1",
-        "@vitejs/plugin-react": "^4.3.4",
-        "vite-plugin-node-polyfills": "^0.22.0",
-        "typescript": "^5.9.3"
+        "vite": "latest",
+        "@vitejs/plugin-react": "latest",
+        "vite-plugin-node-polyfills": "latest",
+        "typescript": "latest",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "@types/node": "latest",
+        "eslint": "latest",
+        "@typescript-eslint/eslint-plugin": "latest",
+        "@typescript-eslint/parser": "latest",
+        "eslint-plugin-react": "latest",
+        "eslint-plugin-react-hooks": "latest",
+        "crypto-browserify": "latest",
+        "stream-browserify": "latest"
     },
     "overrides": {
-        "@noble/hashes": "2.0.1"
+        "@noble/hashes": "latest"
     }
 }
 ```
 
-**IMPORTANT:** Vite 6.x is NOT compatible with vite-plugin-node-polyfills 0.22.0. Use Vite 5.x.
+**Always use "latest" for tooling dependencies** (react, vite, typescript, eslint, etc.). **Keep @btc-vision and opnet packages version-specific** as they require tested compatible versions.
 
 ---
 
@@ -418,12 +438,21 @@ export default defineConfig({
 ```json
 {
     "devDependencies": {
-        "vite": "^7.3.1",
-        "@vitejs/plugin-react": "^4.3.4",
-        "vite-plugin-node-polyfills": "^0.25.0",
-        "vite-plugin-eslint2": "^5.0.0",
-        "crypto-browserify": "^3.12.1",
-        "stream-browserify": "^3.0.0"
+        "vite": "latest",
+        "@vitejs/plugin-react": "latest",
+        "vite-plugin-node-polyfills": "latest",
+        "vite-plugin-eslint2": "latest",
+        "crypto-browserify": "latest",
+        "stream-browserify": "latest",
+        "typescript": "latest",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "@types/node": "latest",
+        "eslint": "latest",
+        "@typescript-eslint/eslint-plugin": "latest",
+        "@typescript-eslint/parser": "latest",
+        "eslint-plugin-react": "latest",
+        "eslint-plugin-react-hooks": "latest"
     }
 }
 ```

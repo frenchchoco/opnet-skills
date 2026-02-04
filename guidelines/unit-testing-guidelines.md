@@ -4,6 +4,14 @@
 
 **CRITICAL: Unit tests are TypeScript, NOT AssemblyScript.** They have their own separate setup.
 
+### MANDATORY: Always Update Packages
+
+**After `npm install`, ALWAYS run:**
+
+```bash
+npx npm-check-updates -u && npm install
+```
+
 ---
 
 # STOP - MANDATORY SECURITY TESTING
@@ -128,9 +136,9 @@ Tests can share the contract's package.json or have their own. Either way, inclu
         "@btc-vision/transaction": "1.8.0-beta.9"
     },
     "devDependencies": {
-        "typescript": "^5.9.3",
-        "ts-node": "^10.9.2",
-        "@types/node": "^25.0.0"
+        "typescript": "latest",
+        "ts-node": "latest",
+        "@types/node": "latest"
     },
     "overrides": {
         "@noble/hashes": "2.0.1"

@@ -12,30 +12,34 @@
         "test": "vitest"
     },
     "dependencies": {
-        "react": "^19.2.3",
-        "react-dom": "^19.2.3",
-        "react-router-dom": "^7.12.0",
-        "opnet": "1.8.1-beta.11",
+        "react": "latest",
+        "react-dom": "latest",
+        "react-router-dom": "latest",
+        "opnet": "1.8.1-beta.12",
         "@btc-vision/walletconnect": "1.10.0-beta.0",
         "@btc-vision/bitcoin": "7.0.0-alpha.10",
         "@btc-vision/transaction": "1.8.0-beta.9",
         "@btc-vision/bip32": "7.0.2",
         "@btc-vision/ecpair": "4.0.2",
-        "@noble/hashes": "^2.0.1"
+        "@noble/hashes": "latest"
     },
     "devDependencies": {
-        "@types/react": "^19.0.0",
-        "@types/react-dom": "^19.0.0",
-        "@vitejs/plugin-react": "^4.3.4",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1",
-        "vitest": "^4.0.0",
-        "eslint": "^9.39.2",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "@types/node": "latest",
+        "@vitejs/plugin-react": "latest",
+        "typescript": "latest",
+        "vite": "latest",
+        "vitest": "latest",
+        "eslint": "latest",
         "@typescript-eslint/eslint-plugin": "latest",
         "@typescript-eslint/parser": "latest",
+        "eslint-plugin-react": "latest",
         "eslint-plugin-react-hooks": "latest",
         "eslint-plugin-react-refresh": "latest",
-        "prettier": "^3.8.0",
-        "vite-plugin-node-polyfills": "latest"
+        "prettier": "latest",
+        "vite-plugin-node-polyfills": "latest",
+        "crypto-browserify": "latest",
+        "stream-browserify": "latest"
     }
 }
