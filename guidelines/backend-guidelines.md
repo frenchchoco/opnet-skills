@@ -1040,6 +1040,176 @@ class ContractCache {
 }
 ```
 
+### Address and Public Key Handling (CRITICAL)
+
+**Contract addresses**: Both `op1...` and `0x...` formats are valid for `getContract()`.
+
+**Public keys for operations**: MUST be hexadecimal format (`0x...`).
+
+### AddressVerificator (ALWAYS USE)
+
+**Use `AddressVerificator` from `@btc-vision/transaction` for ALL address validation:**
+
+```typescript
+import { AddressVerificator } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+// Validate any Bitcoin address
+const isValid = AddressVerificator.isValidAddress(address, networks.bitcoin);
+
+// Validate specific address types
+const isP2TR = AddressVerificator.isValidP2TRAddress(address, networks.bitcoin);
+const isP2WPKH = AddressVerificator.isP2WPKHAddress(address, networks.bitcoin);
+const isLegacy = AddressVerificator.isP2PKHOrP2SH(address, networks.bitcoin);
+
+// Validate OPNet contract address (op1...)
+const isOPNetContract = AddressVerificator.isValidP2OPAddress(address, networks.bitcoin);
+
+// Validate public key (hex format)
+const isPubKeyValid = AddressVerificator.isValidPublicKey(pubKey, networks.bitcoin);
+
+// Detect address type
+const addressType = AddressVerificator.detectAddressType(address, networks.bitcoin);
+// Returns: AddressTypes.P2TR, AddressTypes.P2WPKH, AddressTypes.P2PKH, null (invalid)
+```
+
+**API Validation Example:**
+
+```typescript
+import { AddressVerificator } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+app.post('/api/transfer', async (req, res) => {
+    const { to, amount } = req.body;
+
+    // Validate address format first
+    if (!AddressVerificator.isValidAddress(to, networks.bitcoin) &&
+        !AddressVerificator.isValidPublicKey(to, networks.bitcoin) &&
+        !AddressVerificator.isValidP2OPAddress(to, networks.bitcoin)) {
+        res.status(400).json({ error: 'Invalid address format' });
+        return;
+    }
+
+    // Continue with public key resolution...
+});
+```
+
+### Public Key Resolution
+
+```typescript
+import { AddressVerificator } from '@btc-vision/transaction';
+
+/**
+ * Public key resolver service.
+ * Converts Bitcoin addresses to public keys for contract operations.
+ * Uses AddressVerificator for validation.
+ */
+class PublicKeyResolver {
+    private readonly cache: Map<string, string> = new Map();
+    private readonly providerManager: ProviderManager;
+
+    public constructor() {
+        this.providerManager = ProviderManager.getInstance();
+    }
+
+    /**
+     * Resolve Bitcoin address to public key.
+     * Returns null if not found - caller MUST handle this case.
+     *
+     * @param address - Bitcoin address (bc1q...) or public key (0x...)
+     * @param network - Target network
+     * @returns Public key in hex format, or null if not found
+     */
+    public async resolve(
+        address: string,
+        network: Networks
+    ): Promise<string | null> {
+        // Already a public key - validate it
+        if (address.startsWith('0x')) {
+            if (!AddressVerificator.isValidPublicKey(address, network)) {
+                return null; // Invalid public key
+            }
+            return address;
+        }
+
+        // Validate address format first
+        if (!AddressVerificator.isValidAddress(address, network)) {
+            return null; // Invalid address format
+        }
+
+        const cacheKey = `${network}:${address}`;
+
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey)!;
+        }
+
+        const provider = this.providerManager.getProvider(network);
+        const info = await provider.getPublicKeyInfo(address);
+
+        if (!info || !info.publicKey) {
+            return null; // Not found - caller must require manual input
+        }
+
+        this.cache.set(cacheKey, info.publicKey);
+        return info.publicKey;
+    }
+
+    /**
+     * Resolve or throw if not found.
+     * Use when public key is required.
+     */
+    public async resolveOrThrow(
+        address: string,
+        network: Networks
+    ): Promise<string> {
+        const pubKey = await this.resolve(address, network);
+
+        if (!pubKey) {
+            throw new Error(
+                `Public key not found for address: ${address}. ` +
+                `User must provide the destination public key manually.`
+            );
+        }
+
+        return pubKey;
+    }
+}
+```
+
+**API Endpoint Example:**
+
+```typescript
+// Transfer endpoint that properly handles public keys
+app.post('/api/transfer', async (req, res) => {
+    const { to, amount } = req.body;
+
+    // Try to resolve public key
+    const resolver = new PublicKeyResolver();
+    const pubKey = await resolver.resolve(to, network);
+
+    if (!pubKey) {
+        // Return error - client must provide public key
+        res.status(400).json({
+            error: 'PUBLIC_KEY_REQUIRED',
+            message: 'Public key not found for destination address. Please provide the recipient public key.',
+            requiresPublicKey: true,
+        });
+        return;
+    }
+
+    // Now safe to use hex public key
+    const result = await contract.transfer(pubKey, BigInt(amount));
+    res.json({ success: true, txId: result.txId });
+});
+```
+
+**Address Format Rules:**
+
+| Context | op1 Address | 0x Address | bc1q/tb1q Address |
+|---------|-------------|------------|-------------------|
+| `getContract()` | ✅ Valid | ✅ Valid | ❌ Invalid |
+| `transfer()` / operations | ❌ Must convert | ✅ Valid | ❌ Must convert |
+
 ---
 
 ## Error Handling

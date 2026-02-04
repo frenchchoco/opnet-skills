@@ -25,11 +25,12 @@ npx npm-check-updates -u && npm install
 5. [Caching and Reuse](#caching-and-reuse)
 6. [Network Configuration](#network-configuration)
 7. [Wallet Integration](#wallet-integration)
-8. [Utility Patterns](#utility-patterns)
-9. [Component Patterns](#component-patterns)
-10. [TypeScript Standards](#typescript-standards)
-11. [Common Frontend Mistakes](#common-frontend-mistakes)
-12. [Theming with CSS Variables](#theming-with-css-variables)
+8. [Address and Public Key Handling (CRITICAL)](#address-and-public-key-handling-critical)
+9. [Utility Patterns](#utility-patterns)
+10. [Component Patterns](#component-patterns)
+11. [TypeScript Standards](#typescript-standards)
+12. [Common Frontend Mistakes](#common-frontend-mistakes)
+13. [Theming with CSS Variables](#theming-with-css-variables)
 
 ---
 
@@ -616,6 +617,342 @@ export function useTokenData() {
     return { balance, loading, refreshBalance: fetchBalance };
 }
 ```
+
+---
+
+## Address and Public Key Handling (CRITICAL)
+
+### Contract Addresses: op1 and 0x Both Valid
+
+**For contract addresses**, both formats are valid when using `getContract`:
+
+```typescript
+// ✅ BOTH are valid for contract addresses
+const contract1 = getContract<IOP20Contract>('op1qwerty...', OP20_ABI, provider);
+const contract2 = getContract<IOP20Contract>('0x1234abcd...', OP20_ABI, provider);
+```
+
+### AddressVerificator (ALWAYS USE)
+
+**Use `AddressVerificator` from `@btc-vision/transaction` for ALL address validation:**
+
+```typescript
+import { AddressVerificator } from '@btc-vision/transaction';
+import { networks } from '@btc-vision/bitcoin';
+
+// Validate any Bitcoin address
+const isValid = AddressVerificator.isValidAddress('bc1q...', networks.bitcoin);
+
+// Validate specific address types
+const isP2TR = AddressVerificator.isValidP2TRAddress('bc1p...', networks.bitcoin);
+const isP2WPKH = AddressVerificator.isP2WPKHAddress('bc1q...', networks.bitcoin);
+const isLegacy = AddressVerificator.isP2PKHOrP2SH('1A1z...', networks.bitcoin);
+
+// Validate OPNet contract address (op1...)
+const isOPNetContract = AddressVerificator.isValidP2OPAddress('op1...', networks.bitcoin);
+
+// Validate public key (hex format)
+const isPubKeyValid = AddressVerificator.isValidPublicKey('0x02...', networks.bitcoin);
+
+// Detect address type
+const addressType = AddressVerificator.detectAddressType('bc1q...', networks.bitcoin);
+// Returns: AddressTypes.P2TR, AddressTypes.P2WPKH, AddressTypes.P2PKH, etc.
+```
+
+**Validation Hook Example:**
+
+```typescript
+// hooks/useAddressValidation.ts
+import { useMemo } from 'react';
+import { AddressVerificator } from '@btc-vision/transaction';
+import { Networks } from '@btc-vision/bitcoin';
+
+export function useAddressValidation(address: string, network: Networks) {
+    return useMemo(() => {
+        if (!address) {
+            return { isValid: false, type: null, error: 'Address required' };
+        }
+
+        // Check if it's a public key (0x...)
+        if (address.startsWith('0x')) {
+            const isValid = AddressVerificator.isValidPublicKey(address, network);
+            return { isValid, type: 'publicKey', error: isValid ? null : 'Invalid public key' };
+        }
+
+        // Check if it's an OPNet contract address (op1...)
+        if (address.startsWith('op1')) {
+            const isValid = AddressVerificator.isValidP2OPAddress(address, network);
+            return { isValid, type: 'contract', error: isValid ? null : 'Invalid contract address' };
+        }
+
+        // Check Bitcoin address
+        const isValid = AddressVerificator.isValidAddress(address, network);
+        const type = AddressVerificator.detectAddressType(address, network);
+
+        return {
+            isValid,
+            type,
+            error: isValid ? null : 'Invalid Bitcoin address',
+        };
+    }, [address, network]);
+}
+```
+
+### Public Keys: MUST Be Hexadecimal
+
+**For transfers and operations requiring public keys, you MUST use hexadecimal format (0x...).**
+
+If you have a Bitcoin address (bc1q..., tb1q..., bcrt1q...), you MUST convert it to a public key first:
+
+```typescript
+// ❌ WRONG - Cannot use Bitcoin address directly for transfers
+const result = await contract.transfer('bc1q...recipient', amount);
+
+// ✅ CORRECT - Convert address to public key first
+const pubKeyInfo = await provider.getPublicKeyInfo('bc1q...recipient');
+
+if (!pubKeyInfo || !pubKeyInfo.publicKey) {
+    // Public key not found - FORCE user to enter it manually
+    throw new Error('Public key not found for address. Please provide the recipient public key.');
+}
+
+const recipientPubKey = pubKeyInfo.publicKey; // 0x020373626d317ae8788ce3280b491068610d840c23ecb64c14075bbb9f670af52c
+const result = await contract.transfer(recipientPubKey, amount);
+```
+
+### Public Key Lookup Service
+
+```typescript
+// services/PublicKeyService.ts
+import { JSONRpcProvider } from 'opnet';
+import { AddressVerificator } from '@btc-vision/transaction';
+import { Networks } from '@btc-vision/bitcoin';
+
+/**
+ * Service for resolving Bitcoin addresses to public keys.
+ * Uses AddressVerificator for validation.
+ */
+class PublicKeyService {
+    private static instance: PublicKeyService;
+    private cache: Map<string, string> = new Map();
+
+    private constructor() {}
+
+    public static getInstance(): PublicKeyService {
+        if (!PublicKeyService.instance) {
+            PublicKeyService.instance = new PublicKeyService();
+        }
+        return PublicKeyService.instance;
+    }
+
+    /**
+     * Get public key for a Bitcoin address.
+     * Returns null if not found - caller MUST handle this case.
+     */
+    public async getPublicKey(
+        address: string,
+        provider: JSONRpcProvider,
+        network: Networks
+    ): Promise<string | null> {
+        // Already a public key - validate it
+        if (address.startsWith('0x')) {
+            if (!AddressVerificator.isValidPublicKey(address, network)) {
+                return null; // Invalid public key
+            }
+            return address;
+        }
+
+        // Validate Bitcoin address format first
+        if (!AddressVerificator.isValidAddress(address, network)) {
+            return null; // Invalid address format
+        }
+
+        // Check cache
+        if (this.cache.has(address)) {
+            return this.cache.get(address)!;
+        }
+
+        // Lookup from provider
+        const info = await provider.getPublicKeyInfo(address);
+
+        if (!info || !info.publicKey) {
+            return null; // Not found - caller must handle
+        }
+
+        // Cache and return
+        this.cache.set(address, info.publicKey);
+        return info.publicKey;
+    }
+
+    /**
+     * Clear cache on network change.
+     */
+    public clearCache(): void {
+        this.cache.clear();
+    }
+}
+
+export const publicKeyService = PublicKeyService.getInstance();
+```
+
+### Hook for Public Key Resolution
+
+```typescript
+// hooks/usePublicKey.ts
+import { useState, useCallback } from 'react';
+import { useOPNetProvider } from './useOPNetProvider';
+import { publicKeyService } from '../services/PublicKeyService';
+
+interface PublicKeyResult {
+    publicKey: string | null;
+    loading: boolean;
+    error: string | null;
+    requiresManualInput: boolean;
+}
+
+export function usePublicKey() {
+    const { provider } = useOPNetProvider();
+    const [result, setResult] = useState<PublicKeyResult>({
+        publicKey: null,
+        loading: false,
+        error: null,
+        requiresManualInput: false,
+    });
+
+    const resolvePublicKey = useCallback(async (address: string) => {
+        if (!provider) {
+            setResult({
+                publicKey: null,
+                loading: false,
+                error: 'Provider not available',
+                requiresManualInput: false,
+            });
+            return;
+        }
+
+        // Already a public key
+        if (address.startsWith('0x')) {
+            setResult({
+                publicKey: address,
+                loading: false,
+                error: null,
+                requiresManualInput: false,
+            });
+            return;
+        }
+
+        setResult((prev) => ({ ...prev, loading: true, error: null }));
+
+        const pubKey = await publicKeyService.getPublicKey(address, provider);
+
+        if (pubKey) {
+            setResult({
+                publicKey: pubKey,
+                loading: false,
+                error: null,
+                requiresManualInput: false,
+            });
+        } else {
+            // NOT FOUND - Force user to enter manually
+            setResult({
+                publicKey: null,
+                loading: false,
+                error: 'Public key not found for this address',
+                requiresManualInput: true,
+            });
+        }
+    }, [provider]);
+
+    return { ...result, resolvePublicKey };
+}
+```
+
+### Transfer Component Example
+
+```typescript
+// components/TransferForm.tsx
+import { useState } from 'react';
+import { usePublicKey } from '../hooks/usePublicKey';
+
+function TransferForm() {
+    const [recipient, setRecipient] = useState('');
+    const [manualPubKey, setManualPubKey] = useState('');
+    const { publicKey, loading, error, requiresManualInput, resolvePublicKey } = usePublicKey();
+
+    const handleRecipientChange = async (address: string) => {
+        setRecipient(address);
+        setManualPubKey(''); // Reset manual input
+        await resolvePublicKey(address);
+    };
+
+    const getEffectivePublicKey = (): string | null => {
+        if (requiresManualInput) {
+            return manualPubKey.startsWith('0x') ? manualPubKey : null;
+        }
+        return publicKey;
+    };
+
+    const handleTransfer = async () => {
+        const pubKey = getEffectivePublicKey();
+        if (!pubKey) {
+            alert('Valid public key required');
+            return;
+        }
+
+        // Now safe to transfer with hex public key
+        await contract.transfer(pubKey, amount);
+    };
+
+    return (
+        <form>
+            <input
+                value={recipient}
+                onChange={(e) => handleRecipientChange(e.target.value)}
+                placeholder="Recipient address (bc1q...) or public key (0x...)"
+            />
+
+            {requiresManualInput && (
+                <div className="manual-pubkey-input">
+                    <p className="warning">
+                        Public key not found for this address.
+                        Please enter the recipient's public key:
+                    </p>
+                    <input
+                        value={manualPubKey}
+                        onChange={(e) => setManualPubKey(e.target.value)}
+                        placeholder="0x020373626d317ae8788ce3280b491068610d840c23ecb64c14075bbb9f670af52c"
+                    />
+                </div>
+            )}
+
+            {error && !requiresManualInput && (
+                <p className="error">{error}</p>
+            )}
+
+            <button
+                disabled={loading || !getEffectivePublicKey()}
+                onClick={handleTransfer}
+            >
+                Transfer
+            </button>
+        </form>
+    );
+}
+```
+
+### Summary: Address Formats
+
+| Context | op1 Address | 0x Address | bc1q/tb1q Address |
+|---------|-------------|------------|-------------------|
+| `getContract()` | ✅ Valid | ✅ Valid | ❌ Invalid |
+| `transfer()` / operations | ❌ Must convert | ✅ Valid | ❌ Must convert |
+| Public key parameter | ❌ Must convert | ✅ Valid | ❌ Must convert |
+
+**Key Rules:**
+1. **Contract addresses**: `op1...` and `0x...` both work directly
+2. **Public keys for operations**: MUST be `0x...` hexadecimal format
+3. **Bitcoin addresses** (`bc1q...`): Use `provider.getPublicKeyInfo()` to convert
+4. **If public key not found**: FORCE user to provide it manually - never guess
 
 ---
 
