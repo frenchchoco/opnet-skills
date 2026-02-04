@@ -1,5 +1,5 @@
 ---
-name: opnet
+name: opnet-development
 description: Build on OPNet - Bitcoin L1 consensus layer for trustless smart contracts. Use when building AssemblyScript smart contracts, TypeScript libraries, React frontends, or Node plugins for OPNet. Triggers on Bitcoin smart contract development, OP20 tokens, OP721 NFTs, WebAssembly contracts, verify-dont-custody patterns, epoch mining, and OPNet architecture questions.
 ---
 
@@ -13,6 +13,28 @@ A comprehensive skill for building on OPNet - Bitcoin's L1 consensus layer for t
 
 **IF YOU WRITE CODE WITHOUT READING THE REQUIRED DOCS, YOU WILL CREATE BROKEN, EXPLOITABLE CODE.**
 
+---
+
+## CRITICAL RULES FOR AI AGENTS
+
+### DO NOT:
+- Read a few files and then say "I have enough context"
+- Read random skills or guidelines not listed for your project type
+- Start writing code after skimming 2-3 files
+- Assume you know OPNet patterns from other frameworks
+- Skip files because they "seem similar" to ones you read
+
+### YOU MUST:
+- Read **EVERY SINGLE FILE** listed for your project type below
+- Read them **IN ORDER** - later files depend on earlier ones
+- Read the **COMPLETE FILE**, not just the first few sections
+- **ONLY** read files listed in this skill - no random exploration
+- Confirm you read all files before writing ANY code
+
+---
+
+## WHY THIS MATTERS
+
 OPNet development has:
 - **Beta package versions** that change frequently - guessing versions = build failures
 - **Strict TypeScript rules** - violations = security vulnerabilities
@@ -20,7 +42,7 @@ OPNet development has:
 
 **Guidelines are SUMMARIES. The `docs/` folder contains the ACTUAL implementation patterns.**
 
-You MUST read the docs files listed below IN ORDER before writing ANY code.
+**Reading 3-4 files is NOT enough. You MUST read ALL files for your project type.**
 
 ---
 
@@ -303,17 +325,36 @@ Always engage professional auditors for contracts handling real value.
 
 ## VERIFICATION CHECKPOINT
 
-**BEFORE writing ANY code, confirm:**
+**BEFORE writing ANY code, you MUST be able to answer:**
 
-- [ ] I have read `docs/core-typescript-law-CompleteLaw.md` completely
-- [ ] I have read ALL docs files listed for my project type above
-- [ ] I know the exact package versions from `guidelines/setup-guidelines.md`
-- [ ] I understand the forbidden constructs (`any`, `!`, `while` loops in contracts, etc.)
-- [ ] I understand the required patterns (caching, threading, SafeMath, etc.)
+1. **What project type am I building?** (Contract / Frontend / Backend / Plugin / Tests)
 
-**If you cannot check ALL boxes, GO BACK AND READ THE DOCS.**
+2. **Did I read EVERY file listed for this project type?**
+   - List each file you read
+   - If you cannot list them all, GO BACK AND READ
 
-**Code written without reading the docs will be broken. There are no shortcuts.**
+3. **What are the exact package versions?** (from `guidelines/setup-guidelines.md`)
+   - If you don't know, GO BACK AND READ
+
+4. **What constructs are FORBIDDEN?**
+   - `any`, `!`, `while` loops in contracts, `number` for satoshis, etc.
+   - If you can't list them, GO BACK AND READ
+
+5. **What patterns are REQUIRED?**
+   - Caching, SafeMath, threading, etc.
+   - If you can't list them, GO BACK AND READ
+
+---
+
+### STOP - DO NOT PROCEED IF:
+
+- ❌ You read fewer than 5 docs files
+- ❌ You skipped any file in the mandatory reading list
+- ❌ You read files not listed for your project type
+- ❌ You cannot list the exact package versions
+- ❌ You're about to write "I have enough context" after reading 2-3 files
+
+**GO BACK AND READ ALL THE REQUIRED FILES. NO SHORTCUTS.**
 
 ---
 
