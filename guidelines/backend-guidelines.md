@@ -902,7 +902,11 @@ class TokenService {
 
 ## Provider and Contract Management
 
-### Singleton Provider
+### Provider Note
+
+**WebSocketProvider is EXPERIMENTAL.** Use `JSONRpcProvider` for production backend code until WebSocket support is stable.
+
+### Singleton Provider (JSONRpcProvider)
 
 ```typescript
 /**

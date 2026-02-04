@@ -142,49 +142,17 @@ You MUST read the docs files listed below IN ORDER before writing ANY code.
 
 ### For Generic Questions (Architecture, Concepts, Best Practices)
 
-**For questions NOT tied to a specific project type, read based on the question:**
+**Read:** `guidelines/generic-questions-guidelines.md`
 
-#### Example Questions and What to Read
+For questions like:
+- "How does OPNet work?"
+- "Can OPNet survive 51% attacks?"
+- "How does airdrop work on OPNet?"
+- "What's the difference between OPNet and Runes/Ordinals?"
+- "Why can't contracts hold BTC?"
+- "What is transaction pinning?"
 
-| Example Question | Read These First |
-|------------------|------------------|
-| "How does OPNet work?" | `docs/core-opnet-getting-started-overview.md`, this SKILL.md "What is OPNet" section |
-| "Can OPNet survive 51% attacks?" | This SKILL.md "Security Model" section, `docs/core-opnet-epochs-overview.md` |
-| "How does airdrop work on OPNet?" | `docs/core-opnet-address-systems-airdrop-pattern.md`, this SKILL.md "The Two Address Systems" section |
-| "Why can't I just loop and transfer tokens?" | This SKILL.md "WHY YOU CANNOT JUST LOOP AND TRANSFER" section |
-| "What's the difference between OPNet and Runes/Ordinals?" | This SKILL.md "Why OPNet Requires Consensus" section |
-| "How do epochs work?" | `docs/core-opnet-epochs-overview.md`, `docs/core-OIP-OIP-0004.md` |
-| "What is transaction pinning?" | This SKILL.md "CSV: The Critical Anti-Pinning Mechanism" section |
-| "Why do I need CSV timelocks?" | This SKILL.md "CSV: The Critical Anti-Pinning Mechanism" section |
-| "How do Bitcoin addresses relate to OPNet addresses?" | `docs/core-opnet-address-systems-airdrop-pattern.md` |
-| "What is ML-DSA / quantum resistance?" | `docs/core-transaction-quantum-support-README.md` |
-| "How do I handle chain reorgs?" | `docs/core-opnet-blocks-reorg-detection.md` |
-| "Why can't contracts hold BTC?" | This SKILL.md "Key Principles" section, "NativeSwap" section |
-| "What is verify-don't-custody?" | This SKILL.md "Key Principles" section |
-| "How does NativeSwap work?" | This SKILL.md "NativeSwap: How to Build a Real DEX on Bitcoin" section |
-| "Why do swaps need reservations?" | This SKILL.md "Two-Phase Commit" section |
-| "What is queue impact / slashing?" | This SKILL.md "Queue Impact" and "Slashing" sections |
-
-#### Topics Reference
-
-| Topic | Files to Read |
-|-------|---------------|
-| OPNet architecture | `docs/core-opnet-getting-started-overview.md` |
-| Consensus vs indexing | This SKILL.md - "Why OPNet Requires Consensus" section |
-| Epochs and mining | `docs/core-opnet-epochs-overview.md`, `docs/core-OIP-OIP-0004.md` |
-| Transaction flow | `docs/core-opnet-transactions-broadcasting.md` |
-| Block processing | `docs/core-opnet-blocks-block-operations.md` |
-| Reorg handling | `docs/core-opnet-blocks-reorg-detection.md` |
-| Two address systems | `docs/core-opnet-address-systems-airdrop-pattern.md` |
-| ML-DSA quantum signatures | `docs/core-transaction-quantum-support-README.md` |
-| Public key operations | `docs/core-opnet-public-keys-public-key-operations.md` |
-| OP20 tokens | `docs/core-OIP-OIP-0020.md`, `docs/core-opnet-abi-reference-op20-abi.md` |
-| OP721 NFTs | `docs/core-OIP-OIP-0721.md`, `docs/core-opnet-abi-reference-op721-abi.md` |
-| UTXO handling | `docs/core-opnet-bitcoin-utxos.md` |
-| Sending Bitcoin | `docs/core-opnet-bitcoin-sending-bitcoin.md` |
-| PSBT signing | `docs/clients-bitcoin-psbt.md` |
-| Contract security | `docs/contracts-btc-runtime-core-concepts-security.md` |
-| Gas optimization | `docs/contracts-btc-runtime-gas-optimization.md` |
+**See the full guideline for complete topic mappings and what docs to read for each question type.**
 
 **IMPORTANT: For conceptual questions, read the relevant docs/sections BEFORE answering. Do not guess or make assumptions about how OPNet works.**
 
@@ -192,7 +160,24 @@ You MUST read the docs files listed below IN ORDER before writing ANY code.
 
 ### For Security Auditing
 
-**DISCLAIMER: AI-assisted audits have limitations. Always include this warning:**
+---
+
+# STOP - MANDATORY READING BEFORE ANY AUDIT
+
+**IF YOU AUDIT CODE WITHOUT READING THE REQUIRED DOCS, YOU WILL MISS CRITICAL VULNERABILITIES.**
+
+OPNet audits require understanding:
+- **AssemblyScript runtime internals** - serialization, storage, cache coherence
+- **Bitcoin-specific attack vectors** - transaction pinning, malleability, reorgs
+- **Critical vulnerability patterns** - that standard audits miss completely
+
+**You MUST read `guidelines/audit-guidelines.md` COMPLETELY before auditing ANY code.**
+
+**Skipping the audit guidelines = missing vulnerabilities. There are no shortcuts.**
+
+---
+
+#### DISCLAIMER (MANDATORY IN EVERY REPORT)
 
 ```
 IMPORTANT DISCLAIMER: This audit is AI-assisted and may contain errors,
@@ -202,18 +187,48 @@ Do NOT deploy to production based solely on this review.
 Always engage professional auditors for contracts handling real value.
 ```
 
-#### Before Auditing, Read
+---
 
-| Code Type | Required Reading |
-|-----------|------------------|
-| Smart Contracts | `docs/contracts-btc-runtime-core-concepts-security.md`, `docs/contracts-btc-runtime-gas-optimization.md` |
-| All Code | `docs/core-typescript-law-CompleteLaw.md` |
+#### Mandatory Reading Order for Audits
+
+**Read ALL of these IN ORDER before starting ANY audit:**
+
+| Order | File | Why Required |
+|-------|------|--------------|
+| 1 | `docs/core-typescript-law-CompleteLaw.md` | Type rules that define secure code |
+| 2 | `guidelines/audit-guidelines.md` | **COMPLETE AUDIT GUIDE** - vulnerability patterns, checklists, detection methods |
+
+**Then read based on code type:**
+
+| Code Type | Additional Required Reading |
+|-----------|----------------------------|
+| Smart Contracts | `docs/contracts-btc-runtime-core-concepts-security.md`, `docs/contracts-btc-runtime-gas-optimization.md`, `docs/contracts-btc-runtime-api-reference-safe-math.md`, `docs/contracts-btc-runtime-types-bytes-writer-reader.md` |
 | DEX/Swap Code | This SKILL.md - CSV, NativeSwap, Slashing sections |
-| Frontend | `guidelines/frontend-guidelines.md` - Common Mistakes section |
-| Backend | `guidelines/backend-guidelines.md` - Security Checklist |
+| Frontend | `guidelines/frontend-guidelines.md` |
+| Backend | `guidelines/backend-guidelines.md` |
 | Plugins | `guidelines/plugin-guidelines.md` - Reorg Handling section |
 
-#### Smart Contract Audit Checklist
+---
+
+#### AUDIT VERIFICATION CHECKPOINT
+
+**BEFORE writing ANY audit findings, confirm:**
+
+- [ ] I have read `guidelines/audit-guidelines.md` completely
+- [ ] I have read `docs/core-typescript-law-CompleteLaw.md` completely
+- [ ] I have read ALL additional docs for this code type
+- [ ] I understand the Critical Runtime Vulnerability Patterns section
+- [ ] I understand serialization/deserialization consistency requirements
+- [ ] I understand storage system cache coherence issues
+- [ ] I understand Bitcoin-specific attack vectors (CSV, pinning, reorgs)
+
+**If you cannot check ALL boxes, GO BACK AND READ THE DOCS.**
+
+---
+
+#### Smart Contract Audit Checklist (Summary)
+
+**See `guidelines/audit-guidelines.md` for COMPLETE checklists with detection patterns.**
 
 | Category | Check For |
 |----------|-----------|
@@ -225,8 +240,12 @@ Always engage professional auditors for contracts handling real value.
 | **Storage** | No iterating all map keys, stored aggregates for totals |
 | **Input Validation** | All user inputs validated, bounds checked |
 | **Integer Handling** | u256 created via fromString() for large values, not arithmetic |
+| **Serialization** | Write/read type consistency, sizeof<T>() mapping correct |
+| **Cache Coherence** | Setters load from storage before comparison |
+| **Deletion Markers** | Storage deletion uses 32-byte EMPTY_BUFFER |
+| **Bounds Checking** | `>=` not `>` for max index checks |
 
-#### TypeScript/Frontend/Backend Audit Checklist
+#### TypeScript/Frontend/Backend Audit Checklist (Summary)
 
 | Category | Check For |
 |----------|-----------|
@@ -237,8 +256,9 @@ Always engage professional auditors for contracts handling real value.
 | **Caching** | Provider/contract instances cached, not recreated |
 | **Input Validation** | Address validation, amount validation, bounds checking |
 | **Error Handling** | Errors caught and handled, no silent failures |
+| **Provider Type** | Use JSONRpcProvider (WebSocketProvider is experimental) |
 
-#### Bitcoin-Specific Audit Checklist
+#### Bitcoin-Specific Audit Checklist (Summary)
 
 | Category | Check For |
 |----------|-----------|
@@ -247,8 +267,10 @@ Always engage professional auditors for contracts handling real value.
 | **Transaction Malleability** | Signatures not assumed immutable before confirmation |
 | **Fee Sniping** | Proper locktime handling |
 | **Reorg Handling** | Data deleted/reverted for reorged blocks |
+| **P2WPKH** | Only compressed pubkeys (33 bytes), reject uncompressed |
+| **Witness Script Size** | Validate against 3,600 byte standard limit |
 
-#### DEX/Swap Audit Checklist
+#### DEX/Swap Audit Checklist (Summary)
 
 | Category | Check For |
 |----------|-----------|
@@ -258,18 +280,22 @@ Always engage professional auditors for contracts handling real value.
 | **Queue Manipulation** | Slashing penalties for queue abuse |
 | **Partial Fills** | Atomic coordination of multi-provider payments |
 
-#### Common Vulnerabilities in OPNet Code
+#### Critical Runtime Vulnerability Patterns (Summary)
 
-| Vulnerability | How to Detect |
-|---------------|---------------|
-| **Integer Overflow** | Raw arithmetic on u256 without SafeMath |
-| **Unbounded Loops** | `while` loops, `for` loops without max iteration |
-| **Missing Reorg Handling** | Plugin without `onReorg()` implementation |
-| **Type Coercion Bugs** | `any` type, missing null checks |
-| **Precision Loss** | `number` for satoshis, floats for money |
-| **Multiple Instances** | Provider/contract created per-request instead of cached |
-| **Missing CSV** | Swap recipient addresses without timelock |
-| **State After External Call** | Reentrancy - state modified after external interaction |
+**See `guidelines/audit-guidelines.md` for COMPLETE patterns with code examples.**
+
+| ID | Vulnerability | Impact |
+|----|---------------|--------|
+| C-07 | Serialization Mismatch (write u16, read u32) | Data corruption |
+| C-08 | sizeof<T>() bytes treated as bits | Truncated data |
+| C-09 | Signed/unsigned type confusion (i8 → u8) | Sign loss |
+| C-10 | Cache coherence (setter compares to unloaded cache) | Silent state corruption |
+| C-11 | Wrong deletion marker size | has() returns wrong result |
+| C-12 | Generic integer truncation (only reading first byte) | Data loss |
+| H-06 | Index out of bounds | Memory corruption |
+| H-07 | Off-by-one (`>` instead of `>=`) | Buffer overflow |
+| H-08 | Pointer collision (truncate without hash) | Storage overwrites |
+| M-05 | Taylor series divergence | Incorrect math |
 
 **ALWAYS end audit reports with the disclaimer. NEVER claim the audit is complete or guarantees security.**
 
@@ -301,6 +327,50 @@ Always engage professional auditors for contracts handling real value.
 4. **Tests last** - `npm run test` - run on clean build
 
 **NEVER skip ESLint. NEVER ship code with lint errors.**
+
+---
+
+## TASK COMPLETION CHECKPOINT
+
+**BEFORE considering ANY task complete, ask yourself these questions:**
+
+1. **Have I performed all the steps required by the task?**
+   - Did I address everything the user asked for?
+   - Did I miss any requirements?
+
+2. **Is it appropriate to run tests and linting?**
+   - If I wrote code, did I run `npm run lint` and `npm run test`?
+   - If tests failed, did I fix them?
+
+3. **Did I review and reconsider my work?**
+   - Re-read what I produced - is it correct?
+   - Did I make any assumptions that could be wrong?
+   - Are there edge cases I didn't consider?
+   - Could my code/answer introduce bugs or vulnerabilities?
+   - For smart contracts: SafeMath, bounds checking, access control, serialization
+   - For TypeScript: type safety, null handling, caching patterns
+   - For answers: Is the information accurate? Did I verify it?
+
+4. **Did I write complete, production-ready code?**
+   - **NEVER** add comments like "in a production environment, you would..."
+   - **NEVER** add stubs, placeholders, or TODO comments
+   - **NEVER** write partial implementations with "add your logic here"
+   - If you can't implement something fully, explain why and ask the user
+   - All code must be ready to use immediately, not a starting point
+
+5. **Is it appropriate to adjust non-code files?**
+   - Did I update documentation if behavior changed?
+   - Did I update config files if dependencies changed?
+
+6. **Should new tests be written?**
+   - If I added new functionality, are there tests for it?
+   - Do the tests cover security patterns from the guidelines?
+
+7. **Is this just exploration/research?**
+   - If yes, tests, linting, and auditing are not required
+   - Focus on providing accurate information
+
+**This self-reflection prevents incomplete work, missed requirements, and security vulnerabilities.**
 
 ---
 

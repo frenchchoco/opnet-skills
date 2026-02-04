@@ -163,11 +163,17 @@ src/
 
 ## Caching and Reuse
 
+### Provider Note
+
+**WebSocketProvider is EXPERIMENTAL.** Use `JSONRpcProvider` for production frontend code until WebSocket support is stable.
+
+---
+
 ### ALWAYS CACHE. ALWAYS REUSE.
 
 **Provider, contract instances, and API responses MUST be cached.**
 
-### Provider Singleton
+### Provider Singleton (JSONRpcProvider)
 
 ```typescript
 // services/ProviderService.ts
