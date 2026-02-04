@@ -116,7 +116,7 @@ Tests can share the contract's package.json or have their own. Either way, inclu
         "@types/node": "^25.0.0"
     },
     "overrides": {
-        "@noble/hashes": "2.1.0"
+        "@noble/hashes": "2.0.1"
     }
 }
 ```
