@@ -324,7 +324,7 @@ const totalSupply = totalSupplyResult.decoded;
 ```typescript
 // ✅ GOOD - 1 RPC call returns ALL token info
 const metadataResult = await contract.metadata();
-const metadata = metadataResult.decoded;
+const metadata = metadataResult.properties;
 
 // metadata contains:
 // - name: string
@@ -370,7 +370,7 @@ function TokenInfo({ address }: { address: string }) {
     const [metadata, setMetadata] = useState(null);
 
     useEffect(() => {
-        contract.metadata().then(r => setMetadata(r.decoded));
+        contract.metadata().then(r => setMetadata(r.properties));
     }, [address]); // Fetches every time address changes
 }
 
@@ -383,8 +383,8 @@ async function getTokenMetadata(address: string): Promise<TokenMetadata> {
     }
 
     const result = await contract.metadata();
-    metadataCache.set(address, result.decoded);
-    return result.decoded;
+    metadataCache.set(address, result.properties);
+    return result.properties;
 }
 ```
 
@@ -597,7 +597,7 @@ export function useTokenData() {
         setLoading(true);
         try {
             const result = await contract.balanceOf(userAddress);
-            setBalance(result.decoded[0] as bigint);
+            setBalance(result.properties.balance);
         } finally {
             setLoading(false);
         }

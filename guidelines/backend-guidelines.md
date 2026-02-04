@@ -388,7 +388,7 @@ class OPNetAPI {
 
             res.json({
                 address,
-                balance: (result.decoded[0] as bigint).toString(),
+                balance: result.properties.balance.toString(),
             });
         } catch (error) {
             res.status(500).json({ error: String(error) });
@@ -761,7 +761,7 @@ const [name, symbol, decimals, totalSupply] = await Promise.all([
 **CORRECT - 1 RPC call:**
 ```typescript
 // ✅ GOOD - 1 RPC call returns ALL token info (fast)
-const metadata = (await contract.metadata()).decoded;
+const metadata = (await contract.metadata()).properties;
 const { name, symbol, decimals, totalSupply, owner } = metadata;
 ```
 
@@ -900,9 +900,9 @@ class TokenService {
                 ]);
                 return {
                     address,
-                    name: name.decoded[0] as string,
-                    symbol: symbol.decoded[0] as string,
-                    decimals: Number(decimals.decoded[0]),
+                    name: name.properties.name,
+                    symbol: symbol.properties.symbol,
+                    decimals: decimals.properties.decimals,
                 };
             },
             { ttl: Infinity, blockSensitive: false }
@@ -921,7 +921,7 @@ class TokenService {
             async () => {
                 const contract = await getContract(contractAddr, OP_20_ABI, this.provider);
                 const result = await contract.balanceOf(userAddr);
-                return result.decoded[0] as bigint;
+                return result.properties.balance;
             },
             { ttl: 30000, blockSensitive: true }
         );
