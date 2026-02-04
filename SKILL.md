@@ -1,11 +1,32 @@
 ---
-name: opnet-development
+name: opnet
 description: Build on OPNet - Bitcoin L1 consensus layer for trustless smart contracts. Use when building AssemblyScript smart contracts, TypeScript libraries, React frontends, or Node plugins for OPNet. Triggers on Bitcoin smart contract development, OP20 tokens, OP721 NFTs, WebAssembly contracts, verify-dont-custody patterns, epoch mining, and OPNet architecture questions.
 ---
 
 # OPNet Development Skill
 
 A comprehensive skill for building on OPNet - Bitcoin's L1 consensus layer for trustless smart contracts.
+
+## ⚠️ STEP 1: READ THE GUIDELINES (MANDATORY)
+
+**Before writing ANY code, you MUST read the relevant guidelines in `/root/opnet-skills/guidelines/`:**
+
+| Guideline | When to Read |
+|-----------|--------------|
+| `setup-guidelines.md` | **ALWAYS READ FIRST** - Package versions, configs for ALL project types |
+| `contracts-guidelines.md` | When writing AssemblyScript smart contracts |
+| `unit-testing-guidelines.md` | When writing unit tests (TypeScript, NOT AssemblyScript) |
+| `frontend-guidelines.md` | When building React/Vite frontends |
+
+**IF YOU SKIP THE GUIDELINES, YOU WILL MAKE MISTAKES.**
+
+The guidelines contain:
+- **Exact package versions** (beta versions - DO NOT GUESS)
+- **Correct configuration** (asconfig.json, tsconfig.json, ESLint)
+- **Required patterns** (factory functions, SafeMath, caching)
+- **Common mistakes** with fixes
+
+---
 
 ## What is OPNet
 
