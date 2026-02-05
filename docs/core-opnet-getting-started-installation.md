@@ -106,9 +106,9 @@ my-opnet-app/
         "start": "node build/index.js"
     },
     "dependencies": {
-        "opnet": "1.8.1-beta.12",
-        "@btc-vision/transaction": "1.8.0-beta.9",
-        "@btc-vision/bitcoin": "7.0.0-alpha.10"
+        "opnet": "1.8.1-beta.13",
+        "@btc-vision/transaction": "1.8.0-beta.10",
+        "@btc-vision/bitcoin": "7.0.0-alpha.11"
     },
     "devDependencies": {
         "typescript": "latest"

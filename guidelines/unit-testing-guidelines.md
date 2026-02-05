@@ -133,7 +133,7 @@ Tests can share the contract's package.json or have their own. Either way, inclu
     "type": "module",
     "dependencies": {
         "@btc-vision/unit-test-framework": "0.4.10",
-        "@btc-vision/transaction": "1.8.0-beta.9"
+        "@btc-vision/transaction": "1.8.0-beta.10"
     },
     "devDependencies": {
         "typescript": "latest",

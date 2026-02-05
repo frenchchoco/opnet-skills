@@ -11,10 +11,10 @@ npm install opnet @btc-vision/bitcoin @btc-vision/transaction @btc-vision/bip32 
 ```json
 {
   "@btc-vision/bip32": "^7.0.2",
-  "@btc-vision/bitcoin": "^7.0.0-alpha.10",
+  "@btc-vision/bitcoin": "^7.0.0-alpha.11",
   "@btc-vision/ecpair": "^4.0.2",
-  "@btc-vision/transaction": "^1.8.0-beta.9",
-  "opnet": "^1.8.1-beta.11"
+  "@btc-vision/transaction": "^1.8.0-beta.10",
+  "opnet": "^1.8.1-beta.13"
 }
 ```
 

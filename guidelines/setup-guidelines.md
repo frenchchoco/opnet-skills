@@ -65,11 +65,11 @@ This ensures all packages are updated to their latest compatible versions. **Nev
 {
     "dependencies": {
         "@btc-vision/as-bignum": "0.1.2",
-        "@btc-vision/btc-runtime": "1.11.0-rc.0"
+        "@btc-vision/btc-runtime": "1.11.0-rc.4"
     },
     "devDependencies": {
         "@btc-vision/assemblyscript": "latest",
-        "@btc-vision/opnet-transform": "1.0.2"
+        "@btc-vision/opnet-transform": "1.0.6"
     },
     "overrides": {
         "@noble/hashes": "2.0.1"
@@ -86,7 +86,7 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
     "type": "module",
     "dependencies": {
         "@btc-vision/unit-test-framework": "0.4.10",
-        "@btc-vision/transaction": "1.8.0-beta.9"
+        "@btc-vision/transaction": "1.8.0-beta.10"
     },
     "devDependencies": {
         "typescript": "latest",
@@ -107,9 +107,9 @@ Unit tests are **TypeScript** (NOT AssemblyScript). They have a SEPARATE package
     "dependencies": {
         "react": "latest",
         "react-dom": "latest",
-        "opnet": "1.8.1-beta.12",
-        "@btc-vision/transaction": "1.8.0-beta.9",
-        "@btc-vision/bitcoin": "7.0.0-alpha.10",
+        "opnet": "1.8.1-beta.13",
+        "@btc-vision/transaction": "1.8.0-beta.10",
+        "@btc-vision/bitcoin": "7.0.0-alpha.11",
         "@btc-vision/ecpair": "4.0.2",
         "@btc-vision/bip32": "7.0.2",
         "@btc-vision/walletconnect": "1.10.0-beta.0"

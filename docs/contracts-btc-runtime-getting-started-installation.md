@@ -50,7 +50,7 @@ npm init -y
 ### 2. Install Dependencies
 
 ```bash
-npm install @btc-vision/btc-runtime@1.11.0-rc.0 @btc-vision/as-bignum@0.1.2 @btc-vision/opnet-transform@1.0.2 @btc-vision/assemblyscript
+npm install @btc-vision/btc-runtime@1.11.0-rc.4 @btc-vision/as-bignum@0.1.2 @btc-vision/opnet-transform@1.0.6 @btc-vision/assemblyscript
 npm install --save-dev prettier typescript
 ```
 
