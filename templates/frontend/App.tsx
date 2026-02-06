@@ -32,7 +32,7 @@ function App() {
                 </main>
 
                 <footer className="app-footer">
-                    <p>Built with OPNet</p>
+                    <p>Built on Bitcoin Layer 1 with OP_NET</p>
                 </footer>
             </div>
         </OPNetProvider>
