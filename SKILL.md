@@ -1,6 +1,12 @@
 ---
 name: opnet-development
 description: Build on Bitcoin Layer 1 with OP_NET - Bitcoin L1 consensus layer for trustless smart contracts. Use when building AssemblyScript smart contracts, TypeScript libraries, React frontends, or Node plugins for OPNet. Triggers on Bitcoin smart contract development, OP20 tokens, OP721 NFTs, WebAssembly contracts, verify-dont-custody patterns, epoch mining, and OPNet architecture questions.
+license: MIT
+compatibility: Requires Node.js >= 24.0.0, TypeScript >= 5.9.3, npm. Works with Claude.ai, Claude Code, and API.
+metadata:
+  author: OPNet
+  version: 1.0.0
+  tags: [bitcoin, smart-contracts, assemblyscript, defi, opnet, op20, op721, wasm]
 ---
 
 # OPNet Development Skill
@@ -188,7 +194,7 @@ OPNet development has:
 | 12 | `docs/core-opnet-contracts-transaction-configuration.md` | Transaction options |
 | 13 | `docs/core-transaction-transaction-factory-interfaces.md` | **Advanced TX params (fees, notes, anchors)** |
 | 14 | `docs/clients-walletconnect-README.md` | Wallet connection |
-| 13 | `docs/frontend-motoswap-ui-README.md` | **THE STANDARD** - Reference implementation |
+| 15 | `docs/frontend-motoswap-ui-README.md` | **THE STANDARD** - Reference implementation |
 
 ---
 
@@ -1734,6 +1740,12 @@ const totalSupply: StoredU256 = new StoredU256(TOTAL_SUPPLY_POINTER);
 | `templates/tests/OP20.test.ts` | OP20 test example |
 | `templates/tests/setup.ts` | Test setup |
 | `templates/tests/gulpfile.js` | Gulp build config |
+
+---
+
+## Troubleshooting
+
+Common errors and fixes are documented in `references/troubleshooting.md`. Consult it when you hit build errors, RPC failures, frontend crashes, or deployment issues.
 
 ---
 
